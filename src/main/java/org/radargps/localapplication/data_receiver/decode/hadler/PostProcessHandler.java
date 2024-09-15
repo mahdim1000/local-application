@@ -19,7 +19,9 @@ import org.radargps.localapplication.data_receiver.DataCaptureDeviceService;
 import org.radargps.localapplication.data_receiver.domain.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PostProcessHandler extends BaseDataHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostProcessHandler.class);
 

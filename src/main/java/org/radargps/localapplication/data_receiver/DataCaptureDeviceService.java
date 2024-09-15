@@ -59,8 +59,8 @@ public class DataCaptureDeviceService {
     public void updateLatestDeviceDataAndPublish(UUID deviceId, Data data) {
         dataCaptureDeviceRepository.setLastDataIdAndLastDataTimeByDeviceId(deviceId, data.getId(), data.getLastServerTime());
         Cache.putDeviceIdToLastData(deviceId, data);
-        DomainEvent event = new ProductPalletAssigned()
-        outboxService.saveOutbox(new Outbox());
+//        DomainEvent event = new ProductPalletAssigned()
+//        outboxService.saveOutbox(new Outbox());
     }
 
     public Optional<DataCaptureDevice> findByUniqueId(String uniqueId) {

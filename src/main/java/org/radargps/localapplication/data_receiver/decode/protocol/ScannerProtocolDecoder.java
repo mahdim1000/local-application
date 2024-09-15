@@ -21,7 +21,6 @@ import org.radargps.localapplication.data_receiver.decode.Protocol;
 import org.radargps.localapplication.data_receiver.decode.session.ConnectionManager;
 import org.radargps.localapplication.data_receiver.decode.session.DeviceSession;
 import org.radargps.localapplication.data_receiver.domain.Data;
-import org.springframework.stereotype.Component;
 
 
 import java.net.SocketAddress;
