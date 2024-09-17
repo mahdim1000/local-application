@@ -42,8 +42,8 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
         return protocol != null ? protocol.getName() : PROTOCOL_UNKNOWN;
     }
 
-    public DeviceSession getDeviceSession(String uniqueId) {
-        return connectionManager.getDeviceSessionByUniqueId(uniqueId);
+    public DeviceSession getDeviceSession(String uniqueId, Channel channel, SocketAddress remoteAddress) {
+        return connectionManager.getDeviceSession(protocol, channel, remoteAddress, uniqueId);
     }
 
     @Override

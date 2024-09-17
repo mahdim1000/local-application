@@ -33,7 +33,7 @@ public class DatabaseHandler extends BaseDataHandler {
 
     @Override
     public void handleReceivedData(Data data, Callback callback) {
-        data = dataService.save(data);
+        data = dataService.insertData(data);
         callback.processed(false);
     }
 

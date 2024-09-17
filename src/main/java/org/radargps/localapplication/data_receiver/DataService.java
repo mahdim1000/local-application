@@ -1,5 +1,6 @@
 package org.radargps.localapplication.data_receiver;
 
+import org.radargps.localapplication.common.Cache;
 import org.radargps.localapplication.data_receiver.domain.Data;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,8 @@ public class DataService {
     }
 
     @Transactional
-    public Data save(Data data) {
+    public Data insertData(Data data) {
+        Cache.deviceIdToLastDataPut(data.getDeviceId(), data);
         return dataRepository.save(data);
     }
 

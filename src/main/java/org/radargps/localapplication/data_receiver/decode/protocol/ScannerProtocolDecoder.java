@@ -43,7 +43,7 @@ public class ScannerProtocolDecoder extends BaseProtocolDecoder {
                 String uniqueId = parts[0];
                 String strData = parts[1];
 
-                DeviceSession deviceSession = getDeviceSession(uniqueId);
+                DeviceSession deviceSession = getDeviceSession(uniqueId, channel, remoteAddress);
                 if (deviceSession != null) {
                     return new Data(deviceSession.getDeviceId(), uniqueId, Instant.now().getEpochSecond(), strData);
                 }

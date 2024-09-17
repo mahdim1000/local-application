@@ -62,13 +62,13 @@ public class ConnectionManager {
 
     public DeviceSession getDeviceSession(
             Protocol protocol, Channel channel, SocketAddress remoteAddress,
-            String uniqueId) throws Exception {
+            String uniqueId) {
 
         if (sessionByUniqueId.containsKey(uniqueId)) {
             return sessionByUniqueId.get(uniqueId);
         }
 
-        Optional<DataCaptureDevice> device = dataCaptureDeviceService.findByUniqueId(uniqueId);
+        Optional<DataCaptureDevice> device = dataCaptureDeviceService.findByUniqueIdExec(uniqueId);
 
         if (device.isPresent()) {
             DeviceSession deviceSession = new DeviceSession(device.get().getId(), device.get().getUniqueId(),

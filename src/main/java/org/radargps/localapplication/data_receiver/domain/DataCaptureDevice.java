@@ -13,6 +13,7 @@ public class DataCaptureDevice {
     @Id
     private UUID id;
     private String uniqueId;
+    private UUID companyId;
     private String ipAddress;
 
     @Enumerated(EnumType.STRING)
@@ -33,9 +34,10 @@ public class DataCaptureDevice {
     public DataCaptureDevice() {
     }
 
-    public DataCaptureDevice(String uniqueId, String ipAddress,
+    public DataCaptureDevice(String uniqueId, UUID companyId, String ipAddress,
                              DeviceType type, DeviceReadEntityType readEntityType) {
         this.uniqueId = uniqueId;
+        this.companyId = companyId;
         this.ipAddress = ipAddress;
         this.type = type;
         this.readEntityType = readEntityType;
@@ -51,6 +53,14 @@ public class DataCaptureDevice {
 
     public String getUniqueId() {
         return uniqueId;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(UUID companyId) {
+        this.companyId = companyId;
     }
 
     public void setUniqueId(String uniqueId) {

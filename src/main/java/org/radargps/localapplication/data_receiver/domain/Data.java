@@ -14,16 +14,16 @@ public class Data {
     private UUID id;
     private UUID deviceId;
     private String uniqueId;
-    private Long lastServerTime;
+    private Long serverTime;
     private String data;
 
     public Data() {
     }
 
-    public Data(UUID deviceId, String uniqueId, Long lastServerTime, String data) {
+    public Data(UUID deviceId, String uniqueId, Long serverTime, String data) {
         this.deviceId = deviceId;
         this.uniqueId = uniqueId;
-        this.lastServerTime = lastServerTime;
+        this.serverTime = serverTime;
         this.data = data;
     }
 
@@ -51,12 +51,12 @@ public class Data {
         this.uniqueId = uniqueId;
     }
 
-    public Long getLastServerTime() {
-        return lastServerTime;
+    public Long getServerTime() {
+        return serverTime;
     }
 
-    public void setLastServerTime(Long lastServerTime) {
-        this.lastServerTime = lastServerTime;
+    public void setServerTime(Long serverTime) {
+        this.serverTime = serverTime;
     }
 
     public String getData() {
