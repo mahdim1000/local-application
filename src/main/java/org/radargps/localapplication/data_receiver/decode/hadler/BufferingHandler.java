@@ -16,46 +16,36 @@
 package org.radargps.localapplication.data_receiver.decode.hadler;
 
 import org.radargps.localapplication.common.outbox.DomainEvent;
+import org.radargps.localapplication.data_receiver.DataCaptureDeviceInternalService;
 import org.radargps.localapplication.data_receiver.DataCaptureDeviceService;
 import org.radargps.localapplication.data_receiver.DataService;
 import org.radargps.localapplication.data_receiver.domain.Data;
-import org.radargps.localapplication.data_receiver.domain.DataCaptureDevice;
-import org.radargps.localapplication.data_receiver.domain.DeviceRole;
-import org.radargps.localapplication.data_receiver.event.PalletStagePassed;
+import org.radargps.localapplication.data_receiver.event.PalletScannned;
 import org.radargps.localapplication.data_receiver.event.ProductPalletAssigned;
-import org.radargps.localapplication.data_receiver.event.ProductStagePassed;
+import org.radargps.localapplication.data_receiver.event.ProductScanned;
+import org.radargps.localapplication.data_receiver.message.publisher.PalletEventPublisher;
+import org.radargps.localapplication.data_receiver.message.publisher.ProductEventPublisher;
+import org.radargps.localapplication.data_receiver.message.publisher.ProductPalletEventPublisher;
+import org.radargps.localapplication.data_receiver.message.publisher.ProductProductEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class BufferingHandler extends BaseDataHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferingHandler.class);
     private final DataService dataService;
-    private final DataCaptureDeviceService dataCaptureDeviceService;
+    private final DataCaptureDeviceInternalService dataCaptureDeviceInternalService;
 
-    public BufferingHandler(DataService dataService, DataCaptureDeviceService dataCaptureDeviceService) {
+    public BufferingHandler(DataService dataService, DataCaptureDeviceInternalService dataCaptureDeviceInternalService) {
         this.dataService = dataService;
-        this.dataCaptureDeviceService = dataCaptureDeviceService;
+        this.dataCaptureDeviceInternalService = dataCaptureDeviceInternalService;
     }
 
 
     @Override
     public void handleReceivedData(Data data, Callback callback) {
-        var device = dataCaptureDeviceService.findOneExec(data.getDeviceId());
-        if (device.isPresent()) {
-            DomainEvent event;
-            switch (device.get().getRole()) {
-                case PRODUCT_STAGE -> event = new ProductStagePassed(device.get().getUniqueId(), data.getData());
-                case PALLET_STAGE -> event = new PalletStagePassed(device.get().getUniqueId(), data.getData());
-                case ASSIGN_PRODUCT_PALLET -> {
-                    var connectedDevice = device.get().getConnectedDevice();
-                    event = new ProductPalletAssigned()
-                }
-            }
-        }
+        dataCaptureDeviceInternalService.processAndPublish(data);
         callback.processed(false);
     }
 

@@ -1,10 +1,10 @@
 package org.radargps.localapplication.data_receiver.domain;
 
 public enum DeviceRole {
-    PALLET_STAGE,
-    PRODUCT_STAGE,
-    ASSIGN_PRODUCT_PALLET,
-    UN_ASSIGN_PRODUCT,
-    UN_ASSIGN_PALLET,
-    PRODUCT_LINK
+    PALLET_SCANNER,
+    PRODUCT_SCANNER,
+    PRODUCT_PALLET_ASSIGNER,
+    PRODUCT_UN_ASSIGNER,
+    PALLET_UN_ASSIGNER,
+    PRODUCT_PRODUCT_ASSIGNER,
 }

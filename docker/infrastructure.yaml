@@ -1,0 +1,42 @@
+version: '3.6'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: local_app_db
+    environment:
+      MYSQL_DATABASE: local_application
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3706:3306"
+    volumes:
+      - local_app_mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+      - "15691:15691"
+      - "15692:15692"
+      - "25672:25672"
+    networks:
+      - app-network
+
+volumes:
+  local_app_mysql:
+
+networks:
+  app-network:
+    driver: bridge

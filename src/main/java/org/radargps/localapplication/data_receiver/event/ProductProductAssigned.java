@@ -2,14 +2,14 @@ package org.radargps.localapplication.data_receiver.event;
 
 import org.radargps.localapplication.common.outbox.DomainEvent;
 
-public class ProductPalletAssigned extends DomainEvent {
+public class ProductProductAssigned extends DomainEvent {
     private String macAddress;
-    private String palletId;
+    private String productLink;
     private String productId;
 
-    public ProductPalletAssigned(String macAddress, String palletId, String productId) {
+    public ProductProductAssigned(String macAddress, String productLink, String productId) {
         this.macAddress = macAddress;
-        this.palletId = palletId;
+        this.productLink = productLink;
         this.productId = productId;
     }
 }

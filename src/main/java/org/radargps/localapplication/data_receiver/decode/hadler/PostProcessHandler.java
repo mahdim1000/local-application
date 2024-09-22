@@ -15,6 +15,7 @@
  */
 package org.radargps.localapplication.data_receiver.decode.hadler;
 
+import org.radargps.localapplication.data_receiver.DataCaptureDeviceInternalService;
 import org.radargps.localapplication.data_receiver.DataCaptureDeviceService;
 import org.radargps.localapplication.data_receiver.domain.Data;
 import org.slf4j.Logger;
@@ -25,10 +26,10 @@ import org.springframework.stereotype.Component;
 public class PostProcessHandler extends BaseDataHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostProcessHandler.class);
 
-    private final DataCaptureDeviceService dataCaptureDeviceService;
+    private final DataCaptureDeviceInternalService dataCaptureDeviceInternalService;
 
-    public PostProcessHandler(DataCaptureDeviceService dataCaptureDeviceService) {
-        this.dataCaptureDeviceService = dataCaptureDeviceService;
+    public PostProcessHandler(DataCaptureDeviceInternalService dataCaptureDeviceInternalService) {
+        this.dataCaptureDeviceInternalService = dataCaptureDeviceInternalService;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class PostProcessHandler extends BaseDataHandler {
 //                connectionManager.updatePosition(true, position);
 //            }
 
-        dataCaptureDeviceService.updateLatestDeviceData(data.getDeviceId(), data);
+        dataCaptureDeviceInternalService.updateLatestDeviceData(data.getDeviceId(), data);
         callback.processed(false);
     }
 

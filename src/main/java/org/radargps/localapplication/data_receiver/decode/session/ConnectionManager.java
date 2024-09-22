@@ -18,6 +18,7 @@ package org.radargps.localapplication.data_receiver.decode.session;
 import io.netty.channel.Channel;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
+import org.radargps.localapplication.data_receiver.DataCaptureDeviceInternalService;
 import org.radargps.localapplication.data_receiver.DataCaptureDeviceService;
 import org.radargps.localapplication.data_receiver.decode.Protocol;
 import org.radargps.localapplication.data_receiver.domain.DataCaptureDevice;
@@ -41,13 +42,13 @@ public class ConnectionManager {
     private final Map<UUID, DeviceSession> sessionsByDeviceId = new ConcurrentHashMap<>();
     private final Map<String, DeviceSession> sessionByUniqueId = new ConcurrentHashMap<>();
     private final Timer timer;
-    private final DataCaptureDeviceService dataCaptureDeviceService;
+    private final DataCaptureDeviceInternalService dataCaptureDeviceInternalService;
 
     private final Map<Long, Timeout> timeouts = new ConcurrentHashMap<>();
 
-    public ConnectionManager(Timer timer, DataCaptureDeviceService dataCaptureDeviceService) {
+    public ConnectionManager(Timer timer, DataCaptureDeviceInternalService dataCaptureDeviceInternalService) {
         this.timer = timer;
-        this.dataCaptureDeviceService = dataCaptureDeviceService;
+        this.dataCaptureDeviceInternalService = dataCaptureDeviceInternalService;
         deviceTimeout = Config.getConfig().getLong(Keys.STATUS_TIMEOUT);
     }
 
@@ -68,7 +69,7 @@ public class ConnectionManager {
             return sessionByUniqueId.get(uniqueId);
         }
 
-        Optional<DataCaptureDevice> device = dataCaptureDeviceService.findByUniqueIdExec(uniqueId);
+        Optional<DataCaptureDevice> device = dataCaptureDeviceInternalService.findByUniqueId(uniqueId);
 
         if (device.isPresent()) {
             DeviceSession deviceSession = new DeviceSession(device.get().getId(), device.get().getUniqueId(),

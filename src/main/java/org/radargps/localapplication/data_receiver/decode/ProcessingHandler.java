@@ -19,6 +19,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.radargps.localapplication.data_receiver.decode.hadler.BaseDataHandler;
+import org.radargps.localapplication.data_receiver.decode.hadler.BufferingHandler;
 import org.radargps.localapplication.data_receiver.decode.hadler.DatabaseHandler;
 import org.radargps.localapplication.data_receiver.decode.hadler.PostProcessHandler;
 import org.radargps.localapplication.data_receiver.domain.Data;
@@ -47,7 +48,8 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
     public ProcessingHandler(ApplicationContext context) {
 
         positionHandlers = Stream.of(
-                        DatabaseHandler.class
+                        DatabaseHandler.class,
+                        BufferingHandler.class
                 )
                 .map((clazz) -> (BaseDataHandler) context.getBean(clazz))
                 .filter(Objects::nonNull)

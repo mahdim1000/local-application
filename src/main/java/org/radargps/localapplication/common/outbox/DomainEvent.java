@@ -1,5 +1,10 @@
 package org.radargps.localapplication.common.outbox;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
+
 public abstract class DomainEvent {
     protected String type;
 
@@ -14,4 +19,6 @@ public abstract class DomainEvent {
     public void setType(String type) {
         this.type = type;
     }
+
+
 }
