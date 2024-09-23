@@ -1,7 +1,7 @@
 package org.radargps.localapplication.common;
 
-import org.radargps.localapplication.data_receiver.domain.Data;
-import org.radargps.localapplication.data_receiver.domain.DataCaptureDevice;
+import org.radargps.localapplication.captured.data.domain.Data;
+import org.radargps.localapplication.scanner.domain.Scanner;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,11 +25,11 @@ public class Cache {
 
 
     // -----------------------
-    private static final ConcurrentHashMap<UUID, DataCaptureDevice> DEVICE_ID_TO_DATA_CAPTURE_DEVICE = new ConcurrentHashMap<>();
-    public static void deviceIdToDataCaptureDevicePut(UUID deviceId, DataCaptureDevice device) {
+    private static final ConcurrentHashMap<UUID, Scanner> DEVICE_ID_TO_DATA_CAPTURE_DEVICE = new ConcurrentHashMap<>();
+    public static void deviceIdToDataCaptureDevicePut(UUID deviceId, Scanner device) {
         DEVICE_ID_TO_DATA_CAPTURE_DEVICE.put(deviceId, device);
     }
-    public static DataCaptureDevice deviceIdToDataCaptureDeviceGet(UUID deviceId) {
+    public static Scanner deviceIdToDataCaptureDeviceGet(UUID deviceId) {
         return DEVICE_ID_TO_DATA_CAPTURE_DEVICE.get(deviceId);
     }
     public static boolean deviceIdToDataCaptureDeviceContainsKey(UUID deviceId) {
@@ -42,11 +42,11 @@ public class Cache {
 
 
     // -----------------------
-    private static final ConcurrentHashMap<String, DataCaptureDevice> UNIQUE_ID_TO_DATA_CAPTURE_DEVICE = new ConcurrentHashMap<>();
-    public static void uniqueIdToDataCaptureDevicePut(String uniqueId, DataCaptureDevice device) {
+    private static final ConcurrentHashMap<String, Scanner> UNIQUE_ID_TO_DATA_CAPTURE_DEVICE = new ConcurrentHashMap<>();
+    public static void uniqueIdToDataCaptureDevicePut(String uniqueId, Scanner device) {
         UNIQUE_ID_TO_DATA_CAPTURE_DEVICE.put(uniqueId, device);
     }
-    public static DataCaptureDevice uniqueIdToDataCaptureDeviceGet(String uniqueId) {
+    public static Scanner uniqueIdToDataCaptureDeviceGet(String uniqueId) {
         return UNIQUE_ID_TO_DATA_CAPTURE_DEVICE.get(uniqueId);
     }
     public static boolean uniqueIdToDataCaptureDeviceContainsKey(String uniqueId) {

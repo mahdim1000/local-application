@@ -2,7 +2,7 @@ package org.radargps.localapplication.common.outbox;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
-import org.radargps.localapplication.util.ObjectUtil;
+import org.radargps.localapplication.common.util.ObjectUtil;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;

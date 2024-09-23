@@ -16,23 +16,23 @@ services:
     networks:
       - app-network
 
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
-    ports:
-      - "4369:4369"
-      - "5671:5671"
-      - "5672:5672"
-      - "15671:15671"
-      - "15672:15672"
-      - "15691:15691"
-      - "15692:15692"
-      - "25672:25672"
-    networks:
-      - app-network
+#  rabbitmq:
+#    image: rabbitmq:management
+#    container_name: rabbitmq
+#    environment:
+#      RABBITMQ_DEFAULT_USER: admin
+#      RABBITMQ_DEFAULT_PASS: admin
+#    ports:
+#      - "4369:4369"
+#      - "5671:5671"
+#      - "5672:5672"
+#      - "15671:15671"
+#      - "15672:15672"
+#      - "15691:15691"
+#      - "15692:15692"
+#      - "25672:25672"
+#    networks:
+#      - app-network
 
 volumes:
   local_app_mysql:
