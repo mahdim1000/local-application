@@ -1,9 +1,10 @@
 package org.radargps.localapplication.scanner.device;
 
 import jakarta.validation.Valid;
+import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.temp.ProductPalletScannerConnectionCommand;
-import org.radargps.localapplication.scanner.dto.ScannerCreateCommand;
+import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
 import org.radargps.localapplication.scanner.dto.ScannerRequest;
 import org.radargps.localapplication.scanner.dto.ScannerUpdateCommand;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ public class ScannerController {
     public ResponseEntity<ScannerRequest> findById(@PathVariable UUID deviceId) {
         return ResponseEntity.ok(
                 scannerService.findOne(deviceId)
-                        .orElseThrow(() -> new RuntimeException("not found"))
+                        .orElseThrow(ResourceNotFoundException::new)
         );
     }
 
@@ -44,18 +45,12 @@ public class ScannerController {
     public ResponseEntity<ScannerRequest> findByUniqueId(@PathVariable String uniqueId) {
         return ResponseEntity.ok(
                 scannerService.findByUniqueId(uniqueId)
-                        .orElseThrow(() -> new RuntimeException("not found"))
+                        .orElseThrow(ResourceNotFoundException::new)
         );
     }
 
     @GetMapping("/company/{companyId}")
     public ResponseEntity<Page<ScannerRequest>> findAllByCompany(@PathVariable UUID companyId) {
         return ResponseEntity.ok(scannerService.findByCompany(companyId));
-    }
-
-    @PostMapping("connection/product-pallet")
-    public ResponseEntity<Void> connect(@RequestBody ProductPalletScannerConnectionCommand command) {
-        scannerService.connectToDevice(command);
-        return ResponseEntity.ok().build();
     }
 }

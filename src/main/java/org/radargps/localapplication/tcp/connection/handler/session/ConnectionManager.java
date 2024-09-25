@@ -18,9 +18,9 @@ package org.radargps.localapplication.tcp.connection.handler.session;
 import io.netty.channel.Channel;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
-import org.radargps.localapplication.scanner.ScannerInternalService;
+import org.radargps.localapplication.scanner.device.ScannerInternalService;
+import org.radargps.localapplication.scanner.device.domain.Scanner;
 import org.radargps.localapplication.tcp.connection.handler.Protocol;
-import org.radargps.localapplication.scanner.domain.Scanner;
 import org.radargps.localapplication.common.util.config.Config;
 import org.radargps.localapplication.common.util.config.Keys;
 import org.slf4j.Logger;
@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component

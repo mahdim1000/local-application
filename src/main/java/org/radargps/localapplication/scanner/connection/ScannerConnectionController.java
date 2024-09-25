@@ -1,9 +1,11 @@
 package org.radargps.localapplication.scanner.connection;
 
+import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnectionType;
 import org.radargps.localapplication.scanner.connection.dto.ScannerConnectionCreateCommand;
 import org.radargps.localapplication.scanner.connection.dto.ScannerConnectionRequest;
+import org.radargps.localapplication.scanner.connection.dto.ScannerConnectionUpdateCommand;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +25,22 @@ public class ScannerConnectionController {
         return ResponseEntity.ok(this.scannerConnectionService.createConnection(command));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ScannerConnectionRequest> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(this.scannerConnectionService.findById(id));
+    @PatchMapping("/{id}")
+    public ResponseEntity<ScannerConnectionRequest> update(UUID id, ScannerConnectionUpdateCommand updateCommand) {
+        return ResponseEntity.ok(this.scannerConnectionService.partialUpdate(id, updateCommand));
     }
 
-    @GetMapping()
-    public ResponseEntity<Page<ScannerConnectionRequest>> findByCompanyId(@RequestParam UUID companyId,
-                                                                         @RequestParam ScannerConnectionType type) {
-        return ResponseEntity.ok(this.scannerConnectionService.findByCompanyIdAndType(companyId, type));
+    @GetMapping("/{id}")
+    public ResponseEntity<ScannerConnectionRequest> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.scannerConnectionService.findById(id)
+                .orElseThrow(ResourceNotFoundException::new));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ScannerConnectionRequest>> findAll(@RequestParam(required = false) UUID companyId,
+                                                                  @RequestParam(required = false) ScannerConnectionType type,
+                                                                  @RequestParam(required = false) Integer pageSize,
+                                                                  @RequestParam(required = false) Integer pageNumber) {
+        return ResponseEntity.ok(this.scannerConnectionService.findAll(companyId, type, pageSize, pageNumber));
     }
 }

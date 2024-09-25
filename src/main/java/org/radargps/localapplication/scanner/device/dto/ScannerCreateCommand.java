@@ -1,4 +1,4 @@
-package org.radargps.localapplication.scanner.dto;
+package org.radargps.localapplication.scanner.device.dto;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,17 +14,10 @@ public record ScannerCreateCommand(
         @NotNull
         @NotEmpty
         String uniqueId,
-        @NotNull
         UUID companyId,
         String ipAddress,
-        @NotNull
-        @Enumerated(EnumType.STRING)
         ScannerType type,
-        @NotNull
-        @Enumerated(EnumType.STRING)
         ScannerReadEntityType readEntityType,
-        @NotNull
-        @Enumerated(EnumType.STRING)
         ScannerRole role
 ) {
 }

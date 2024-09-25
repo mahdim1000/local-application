@@ -1,10 +1,13 @@
 package org.radargps.localapplication.scanner.device;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import org.radargps.localapplication.scanner.connection.ScannerConnectionInternalService;
 import org.radargps.localapplication.scanner.device.domain.Scanner;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.captured.data.domain.Data;
 import org.radargps.localapplication.scanner.device.domain.ScannerReadEntityType;
+import org.radargps.localapplication.scanner.device.domain.ScannerRole;
+import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.scanner.device.event.PalletScannned;
 import org.radargps.localapplication.scanner.device.event.ProductProductAssigned;
 import org.radargps.localapplication.scanner.device.event.ProductScanned;
@@ -28,6 +31,7 @@ import static org.radargps.localapplication.common.util.TimeUtil.isTimestampDiff
 @Service
 public class ScannerInternalService {
     private final ScannerRepository scannerRepository;
+    private final ScannerConnectionInternalService scannerConnectionInternalService;
 //    private final DataService dataService;
 //    private final OutboxService outboxService;
 
@@ -38,8 +42,14 @@ public class ScannerInternalService {
     private final Cache<UUID, Data> deviceLastDataCache;
 
     public ScannerInternalService(ScannerRepository scannerRepository,
-                                  PalletEventPublisher palletEventPublisher, ProductEventPublisher productEventPublisher, ProductPalletEventPublisher productPalletEventPublisher, ProductProductEventPublisher productProductEventPublisher, Cache deviceLastDataCache) {
+                                  ScannerConnectionInternalService scannerConnectionInternalService,
+                                  PalletEventPublisher palletEventPublisher,
+                                  ProductEventPublisher productEventPublisher,
+                                  ProductPalletEventPublisher productPalletEventPublisher,
+                                  ProductProductEventPublisher productProductEventPublisher,
+                                  Cache deviceLastDataCache) {
         this.scannerRepository = scannerRepository;
+        this.scannerConnectionInternalService = scannerConnectionInternalService;
         this.palletEventPublisher = palletEventPublisher;
         this.productEventPublisher = productEventPublisher;
         this.productPalletEventPublisher = productPalletEventPublisher;
@@ -49,6 +59,12 @@ public class ScannerInternalService {
 
     @Transactional
     public Scanner create(Scanner device) {
+        if (device.getType() == null) {
+            device.setType(ScannerType.QR_SCANNER);
+        }
+        if (device.getRole() == null) {
+            device.setRole(ScannerRole.PALLET_SCANNER);
+        }
         return scannerRepository.save(device);
     }
 
@@ -71,11 +87,11 @@ public class ScannerInternalService {
         scannerRepository.setLastDataIdAndLastDataTimeByDeviceId(deviceId, data.getId(), data.getServerTime());
     }
 
-    @Cacheable(value = "data", key = "#deviceId")
-    @Transactional
-    public Optional<Data> findLatestDeviceData(UUID deviceId) {
-        return scannerRepository.findLatestDeviceData(deviceId);
-    }
+//    @Cacheable(value = "data", key = "#deviceId")
+//    @Transactional
+//    public Optional<Data> findLatestDeviceData(UUID deviceId) {
+//        return scannerRepository.findLatestDeviceData(deviceId);
+//    }
 
     @Cacheable(value = "device", key = "#uniqueId")
     public Optional<Scanner> findByUniqueId(String uniqueId) {
@@ -112,22 +128,25 @@ public class ScannerInternalService {
         var event = new PalletScannned(device.getUniqueId(), data.getData());
         palletEventPublisher.publish(event);
     }
-    private void productPalletAssigned(Scanner device, Data data) {
-        var connectedDevice = device.getConnectedDevice();
-        if (connectedDevice != null) {
-            var connectdDeviceData = deviceLastDataCache.getIfPresent(connectedDevice.getId());
-            if (connectdDeviceData != null) {
+    private void productPalletAssigned(Scanner scanner, Data data) {
+        var connection = scannerConnectionInternalService.findByScannerId(scanner.getId());
+        if (connection.isPresent()) {
+            var connectedScannerId = connection.get().getFirstScannerId().equals(scanner)
+                    ? connection.get().getSecondScannerId()
+                    : connection.get().getFirstScannerId();
+            var connectedScanner = findOne(connectedScannerId);
+            if (connectedScanner.isPresent()) {
                 UUID palletId = null;
                 UUID productId = null;
 
-                if (device.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
-                    palletId = device.getId();
-                } else if (connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
+                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
+                    palletId = scanner.getId();
+                } else if (connectedScanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
                     palletId = connectedDevice.getId();
                 }
 
-                if (device.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                    productId = device.getId();
+                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
+                    productId = scanner.getId();
                 } else if (connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
                     productId = connectedDevice.getId();
                 }

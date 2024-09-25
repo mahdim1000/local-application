@@ -6,18 +6,13 @@ import org.radargps.localapplication.scanner.device.domain.ScannerRole;
 
 import java.util.UUID;
 
-public record ScannerConnectionCreateCommand(
-        @NotNull
+public record ScannerConnectionUpdateCommand(
         UUID firstScannerId,
-        @NotNull
         ScannerRole firstScannerRole,
 
-        @NotNull
         UUID secondScannerId,
-        @NotNull
         ScannerRole secondScannerRole,
 
-        @NotNull
         ScannerConnectionType type,
         Integer capacity
 

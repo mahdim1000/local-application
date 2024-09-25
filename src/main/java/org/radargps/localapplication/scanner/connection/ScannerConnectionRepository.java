@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface ScannerConnectionRepository extends JpaRepository<UUID, ScannerConnection> {
+public interface ScannerConnectionRepository extends JpaRepository<ScannerConnection, UUID> {
 }

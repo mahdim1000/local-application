@@ -4,7 +4,7 @@ import org.radargps.localapplication.common.Cache;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.temp.ProductPalletScannerConnectionCommand;
-import org.radargps.localapplication.scanner.dto.ScannerCreateCommand;
+import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
 import org.radargps.localapplication.scanner.dto.ScannerRequest;
 import org.radargps.localapplication.scanner.dto.ScannerUpdateCommand;
 import org.springframework.data.domain.PageRequest;
@@ -38,16 +38,15 @@ public class ScannerService {
     public ScannerRequest partialUpdate(UUID dataCaptureDeviceId, ScannerUpdateCommand command) {
         var device = scannerInternalService.findOne(dataCaptureDeviceId)
                 .orElseThrow(RuntimeException::new);
-
         scannerMapper.partialUpdate(device, command);
         scannerInternalService.updateDevice(device);
-        Cache.evictDevice(dataCaptureDeviceId);
         return scannerMapper.toRequest(device);
     }
 
     @Transactional
     public Optional<ScannerRequest> findOne(UUID deviceId) {
-        return scannerInternalService.findOne(deviceId).map(scannerMapper::toRequest);
+        return scannerInternalService.findOne(deviceId)
+                .map(scannerMapper::toRequest);
     }
 
 
@@ -69,7 +68,8 @@ public class ScannerService {
 
     @Transactional(readOnly = true)
     public Optional<ScannerRequest> findByUniqueId(String uniqueId) {
-        return scannerInternalService.findByUniqueId(uniqueId).map(scannerMapper::toRequest);
+        return scannerInternalService.findByUniqueId(uniqueId)
+                .map(scannerMapper::toRequest);
     }
 
 
@@ -77,23 +77,9 @@ public class ScannerService {
     public Page<ScannerRequest> findByCompany(UUID companyId) {
         Pageable pageable = PageRequest.of(0, 100);
         var result = scannerInternalService.findByCompanyId(companyId, pageable);
-        return new Page<>(result.getContent().stream().map(scannerMapper::toRequest).toList(),
-                result.getTotalElements());
-    }
-
-    @Transactional
-    public void connectToDevice(ProductPalletScannerConnectionCommand command) {
-        var firstDevice = scannerInternalService.findOne(command.firstScannerId())
-                .orElseThrow(() -> new ResourceNotFoundException("firstScanner not found"));
-        var secondDevice = scannerInternalService.findOne(command.secondScannerId())
-                .orElseThrow(() -> new ResourceNotFoundException("secondScanner not found"));
-
-
-
-        firstDevice.setConnectedDevice(secondDevice);
-        secondDevice.setConnectedDevice(firstDevice);
-
-        scannerInternalService.updateDevice(firstDevice);
-        scannerInternalService.updateDevice(secondDevice);
+        return new Page<>(
+                result.getContent().stream().map(scannerMapper::toRequest).toList(),
+                result.getTotalElements()
+        );
     }
 }
