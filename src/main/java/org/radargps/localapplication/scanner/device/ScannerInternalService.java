@@ -8,10 +8,7 @@ import org.radargps.localapplication.captured.data.domain.Data;
 import org.radargps.localapplication.scanner.device.domain.ScannerReadEntityType;
 import org.radargps.localapplication.scanner.device.domain.ScannerRole;
 import org.radargps.localapplication.scanner.device.domain.ScannerType;
-import org.radargps.localapplication.scanner.device.event.PalletScannned;
-import org.radargps.localapplication.scanner.device.event.ProductProductAssigned;
-import org.radargps.localapplication.scanner.device.event.ProductScanned;
-import org.radargps.localapplication.scanner.device.event.ProductUnAssigned;
+import org.radargps.localapplication.scanner.device.event.*;
 import org.radargps.localapplication.scanner.device.message.publisher.PalletEventPublisher;
 import org.radargps.localapplication.scanner.device.message.publisher.ProductEventPublisher;
 import org.radargps.localapplication.scanner.device.message.publisher.ProductPalletEventPublisher;
@@ -129,35 +126,35 @@ public class ScannerInternalService {
         palletEventPublisher.publish(event);
     }
     private void productPalletAssigned(Scanner scanner, Data data) {
-        var connection = scannerConnectionInternalService.findByScannerId(scanner.getId());
-        if (connection.isPresent()) {
-            var connectedScannerId = connection.get().getFirstScannerId().equals(scanner)
-                    ? connection.get().getSecondScannerId()
-                    : connection.get().getFirstScannerId();
-            var connectedScanner = findOne(connectedScannerId);
-            if (connectedScanner.isPresent()) {
-                UUID palletId = null;
-                UUID productId = null;
-
-                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
-                    palletId = scanner.getId();
-                } else if (connectedScanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
-                    palletId = connectedDevice.getId();
-                }
-
-                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                    productId = scanner.getId();
-                } else if (connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                    productId = connectedDevice.getId();
-                }
-
-                if (palletId != null && productId != null) {
-                    var event = new ProductPalletAssigned(palletId.toString(), productId.toString());
-                    productPalletEventPublisher.publish(event);
-                }
-
-            }
-        }
+//        var connection = scannerConnectionInternalService.findByScannerId(scanner.getId());
+//        if (connection.isPresent()) {
+//            var connectedScannerId = connection.get().getFirstScannerId().equals(scanner)
+//                    ? connection.get().getSecondScannerId()
+//                    : connection.get().getFirstScannerId();
+//            var connectedScanner = findOne(connectedScannerId);
+//            if (connectedScanner.isPresent()) {
+//                UUID palletId = null;
+//                UUID productId = null;
+//
+//                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
+//                    palletId = scanner.getId();
+//                } else if (connectedScanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
+//                    palletId = connectedDevice.getId();
+//                }
+//
+//                if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
+//                    productId = scanner.getId();
+//                } else if (connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
+//                    productId = connectedDevice.getId();
+//                }
+//
+//                if (palletId != null && productId != null) {
+//                    var event = new ProductPalletAssigned(palletId.toString(), productId.toString());
+//                    productPalletEventPublisher.publish(event);
+//                }
+//
+//            }
+//        }
     }
     private void productUnAssigned(Scanner device, Data data) {
         var event = new ProductUnAssigned(device.getUniqueId(), data.getData());
@@ -168,30 +165,30 @@ public class ScannerInternalService {
         palletEventPublisher.publish(event);
     }
     private void productProductAssigned(Scanner device, Data data) {
-        var connectedDevice = device.getConnectedDevice();
-        if (connectedDevice != null) {
-            var connectdDeviceData = deviceLastDataCache.getIfPresent(connectedDevice.getId());
-            if (connectdDeviceData != null
-                    && device.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)
-                    && connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)
-                    && isTimestampDifferenceLessThan(data.getServerTime(), connectdDeviceData.getServerTime(), 300)) {
-                String link = null;
-                UUID productId = null;
-
-                try {
-                    productId = UUID.fromString(data.getData());
-                    link = connectdDeviceData.getData();
-                } catch (Exception e) {
-                    link = data.getData();
-                    productId = UUID.fromString(connectdDeviceData.getData());
-                }
-
-                if (link != null && productId != null) {
-                    var event = new ProductProductAssigned(link, productId);
-                    productPalletEventPublisher.publish(event);
-                }
-
-            }
-        }
+//        var connectedDevice = device.getConnectedDevice();
+//        if (connectedDevice != null) {
+//            var connectdDeviceData = deviceLastDataCache.getIfPresent(connectedDevice.getId());
+//            if (connectdDeviceData != null
+//                    && device.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)
+//                    && connectedDevice.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)
+//                    && isTimestampDifferenceLessThan(data.getServerTime(), connectdDeviceData.getServerTime(), 300)) {
+//                String link = null;
+//                UUID productId = null;
+//
+//                try {
+//                    productId = UUID.fromString(data.getData());
+//                    link = connectdDeviceData.getData();
+//                } catch (Exception e) {
+//                    link = data.getData();
+//                    productId = UUID.fromString(connectdDeviceData.getData());
+//                }
+//
+//                if (link != null && productId != null) {
+//                    var event = new ProductProductAssigned(link, productId);
+//                    productPalletEventPublisher.publish(event);
+//                }
+//
+//            }
+//        }
     }
 }

@@ -16,8 +16,8 @@
 package org.radargps.localapplication.tcp.connection.handler.session;
 
 import io.netty.channel.Channel;
-import org.radargps.localapplication.scanner.domain.ScannerReadEntityType;
-import org.radargps.localapplication.scanner.domain.ScannerType;
+import org.radargps.localapplication.scanner.device.domain.ScannerReadEntityType;
+import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.tcp.connection.handler.Protocol;
 
 import java.net.SocketAddress;

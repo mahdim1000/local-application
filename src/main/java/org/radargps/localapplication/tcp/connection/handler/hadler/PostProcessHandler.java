@@ -15,8 +15,8 @@
  */
 package org.radargps.localapplication.tcp.connection.handler.hadler;
 
-import org.radargps.localapplication.scanner.ScannerInternalService;
 import org.radargps.localapplication.captured.data.domain.Data;
+import org.radargps.localapplication.scanner.device.ScannerInternalService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface ProductPalletScannerConnectionRepository extends JpaRepository<UUID, ProductPalletScannerConnection> {
+public interface ProductPalletScannerConnectionRepository extends JpaRepository<ProductPalletScannerConnection, UUID> {
 }

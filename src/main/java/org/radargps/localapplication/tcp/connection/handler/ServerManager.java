@@ -40,7 +40,7 @@ public class ServerManager implements LifecycleObject {
 
 
     public ServerManager(ApplicationContext context) throws IOException, URISyntaxException, ReflectiveOperationException {
-        for (Class<?> protocolClass : ClassScanner.findSubclasses(BaseProtocol.class, "org.radargps.localapplication.data_receiver.decode.protocol")) {
+        for (Class<?> protocolClass : ClassScanner.findSubclasses(BaseProtocol.class, "org.radargps.localapplication.tcp.connection.handler.protocol")) {
             String protocolName = BaseProtocol.nameFromClass(protocolClass);
                 if (Config.getConfig().getInteger(Keys.PROTOCOL_PORT.withPrefix(protocolName)) > 0) {
                     BaseProtocol protocol = (BaseProtocol) context.getBean(protocolClass);

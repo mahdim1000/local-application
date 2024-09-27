@@ -1,6 +1,5 @@
 package org.radargps.localapplication.scanner.device;
 
-import org.radargps.localapplication.common.Cache;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.temp.ProductPalletScannerConnectionCommand;

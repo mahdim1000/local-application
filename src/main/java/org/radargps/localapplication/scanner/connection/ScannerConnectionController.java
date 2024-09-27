@@ -26,7 +26,7 @@ public class ScannerConnectionController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ScannerConnectionRequest> update(UUID id, ScannerConnectionUpdateCommand updateCommand) {
+    public ResponseEntity<ScannerConnectionRequest> updateConnection(UUID id, ScannerConnectionUpdateCommand updateCommand) {
         return ResponseEntity.ok(this.scannerConnectionService.partialUpdate(id, updateCommand));
     }
 
