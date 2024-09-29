@@ -17,7 +17,9 @@ public record ScannerCreateCommand(
         UUID companyId,
         String ipAddress,
         ScannerType type,
+        @Enumerated(EnumType.STRING)
         ScannerReadEntityType readEntityType,
+        @Enumerated(EnumType.STRING)
         ScannerRole role
 ) {
 }

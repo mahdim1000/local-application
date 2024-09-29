@@ -4,8 +4,8 @@ import org.radargps.localapplication.common.errors.exception.ResourceNotFoundExc
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.temp.ProductPalletScannerConnectionCommand;
 import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
-import org.radargps.localapplication.scanner.dto.ScannerRequest;
-import org.radargps.localapplication.scanner.dto.ScannerUpdateCommand;
+import org.radargps.localapplication.scanner.device.dto.ScannerRequest;
+import org.radargps.localapplication.scanner.device.dto.ScannerUpdateCommand;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,17 +34,17 @@ public class ScannerService {
 
 
     @Transactional
-    public ScannerRequest partialUpdate(UUID dataCaptureDeviceId, ScannerUpdateCommand command) {
-        var device = scannerInternalService.findOne(dataCaptureDeviceId)
+    public ScannerRequest partialUpdate(String uniqueId, ScannerUpdateCommand command) {
+        var scanner = scannerInternalService.findOne(uniqueId)
                 .orElseThrow(RuntimeException::new);
-        scannerMapper.partialUpdate(device, command);
-        scannerInternalService.updateDevice(device);
-        return scannerMapper.toRequest(device);
+        scannerMapper.partialUpdate(scanner, command);
+        scannerInternalService.updateDevice(scanner);
+        return scannerMapper.toRequest(scanner);
     }
 
     @Transactional
-    public Optional<ScannerRequest> findOne(UUID deviceId) {
-        return scannerInternalService.findOne(deviceId)
+    public Optional<ScannerRequest> findOne(String uniqueId) {
+        return scannerInternalService.findOne(uniqueId)
                 .map(scannerMapper::toRequest);
     }
 

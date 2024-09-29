@@ -20,6 +20,7 @@ public class ScannerConnectionInternalService {
     }
 
     public ScannerConnection create(ScannerConnection createConnection) {
+        createConnection.setId(UUID.randomUUID());
         return scannerConnectionRepository.save(createConnection);
     }
 
@@ -32,6 +33,12 @@ public class ScannerConnectionInternalService {
     }
 
     public Page<ScannerConnection> findAll(UUID companyId, ScannerConnectionType type, Integer pageSize, Integer pageNumber) {
+        if (pageNumber == null) {
+            pageNumber = 0;
+        }
+        if (pageSize == null) {
+            pageSize = 10;
+        }
         var dbPage = scannerConnectionCriteria.findAll(companyId, type, PageRequest.of(pageNumber, pageSize));
         return new Page<>(dbPage.getContent(), dbPage.getTotalElements());
     }

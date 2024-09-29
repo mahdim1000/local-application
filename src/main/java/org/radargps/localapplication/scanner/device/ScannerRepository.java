@@ -11,15 +11,15 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ScannerRepository extends JpaRepository<Scanner, UUID> {
+public interface ScannerRepository extends JpaRepository<Scanner, String> {
 
     @Modifying
-    @Query("UPDATE Scanner d SET d.lastDataId = :dataId, d.lastDataTime = :lastServerTime WHERE d.id = :deviceId")
-    void setLastDataIdAndLastDataTimeByDeviceId(UUID deviceId, UUID dataId, Long lastServerTime);
+    @Query("UPDATE Scanner d SET d.lastDataId = :dataId, d.lastDataTime = :lastServerTime WHERE d.uniqueId = :uniqueId")
+    void setLastDataIdAndLastDataTimeByUniqueId(String uniqueId, UUID dataId, Long lastServerTime);
 
     Optional<Scanner> findByUniqueId(String uniqueId);
     Page<Scanner> findByCompanyId(UUID companyId, Pageable pageable);
 
-    @Query("SELECT data FROM Scanner device INNER JOIN Data data On device.lastDataId = data.id")
-    Optional<Data> findLatestDeviceData(UUID deviceId);
+    @Query("SELECT data FROM Scanner scanner INNER JOIN Data data On scanner.lastDataId = data.id WHERE scanner.uniqueId = :uniqueId")
+    Optional<Data> findLatestScannerData(String uniqueId);
 }

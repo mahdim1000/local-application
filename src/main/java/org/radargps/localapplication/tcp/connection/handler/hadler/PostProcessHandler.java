@@ -46,7 +46,7 @@ public class PostProcessHandler extends BaseDataHandler {
 //                connectionManager.updatePosition(true, position);
 //            }
 
-        scannerInternalService.updateLatestDeviceData(data.getDeviceId(), data);
+        scannerInternalService.updateLatestDeviceData(data.getUniqueId(), data);
         callback.processed(false);
     }
 

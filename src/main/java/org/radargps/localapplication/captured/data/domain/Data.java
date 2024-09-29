@@ -12,7 +12,6 @@ public class Data {
     @UuidGenerator
     @Id
     private UUID id;
-    private UUID deviceId;
     private String uniqueId;
     private Long serverTime;
     private String data;
@@ -20,8 +19,7 @@ public class Data {
     public Data() {
     }
 
-    public Data(UUID deviceId, String uniqueId, Long serverTime, String data) {
-        this.deviceId = deviceId;
+    public Data(String uniqueId, Long serverTime, String data) {
         this.uniqueId = uniqueId;
         this.serverTime = serverTime;
         this.data = data;
@@ -33,14 +31,6 @@ public class Data {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(UUID deviceId) {
-        this.deviceId = deviceId;
     }
 
     public String getUniqueId() {

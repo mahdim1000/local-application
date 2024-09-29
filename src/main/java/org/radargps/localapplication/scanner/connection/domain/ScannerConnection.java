@@ -1,8 +1,8 @@
 package org.radargps.localapplication.scanner.connection.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.radargps.localapplication.scanner.device.domain.Scanner;
+import org.radargps.localapplication.scanner.device.domain.ScannerReadEntityType;
 
 import java.util.UUID;
 
@@ -12,8 +12,12 @@ public class ScannerConnection {
 
     @Id
     private UUID id;
-    private UUID firstScannerId;
-    private UUID secondScannerId;
+    @OneToOne
+    private Scanner firstScanner;
+    @OneToOne
+    private Scanner secondScanner;
+
+    @Enumerated(EnumType.STRING)
     private ScannerConnectionType type;
     private Integer capacity;
 
@@ -25,20 +29,20 @@ public class ScannerConnection {
         this.id = id;
     }
 
-    public UUID getFirstScannerId() {
-        return firstScannerId;
+    public Scanner getFirstScanner() {
+        return firstScanner;
     }
 
-    public void setFirstScannerId(UUID firstScannerId) {
-        this.firstScannerId = firstScannerId;
+    public void setFirstScanner(Scanner firstScanner) {
+        this.firstScanner = firstScanner;
     }
 
-    public UUID getSecondScannerId() {
-        return secondScannerId;
+    public Scanner getSecondScanner() {
+        return secondScanner;
     }
 
-    public void setSecondScannerId(UUID secondScannerId) {
-        this.secondScannerId = secondScannerId;
+    public void setSecondScanner(Scanner secondScanner) {
+        this.secondScanner = secondScanner;
     }
 
     public ScannerConnectionType getType() {

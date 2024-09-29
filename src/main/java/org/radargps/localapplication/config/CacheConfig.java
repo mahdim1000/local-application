@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class CacheConfig {
     @Bean
-    public Cache<UUID, Data> deviceLastDataCache() {
+    public Cache<String, Data> scannerLastDataCache() {
         return Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .maximumSize(1_000_000)
@@ -30,7 +30,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("device", "data");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("scanner", "data");
         cacheManager.setCaffeine(caffeine);
         return cacheManager;
     }

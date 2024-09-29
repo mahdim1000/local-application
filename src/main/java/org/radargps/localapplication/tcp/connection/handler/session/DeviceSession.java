@@ -27,7 +27,6 @@ import java.util.UUID;
 
 public class DeviceSession {
 
-    private final UUID deviceId;
     private final String uniqueId;
     private final ScannerType type;
     private final ScannerReadEntityType readEntityType;
@@ -35,20 +34,15 @@ public class DeviceSession {
     private final Channel channel;
     private final SocketAddress remoteAddress;
 
-    public DeviceSession(UUID deviceId, String uniqueId, ScannerType type,
+    public DeviceSession(String uniqueId, ScannerType type,
                          ScannerReadEntityType readEntityType, Protocol protocol,
                          Channel channel, SocketAddress remoteAddress) {
-        this.deviceId = deviceId;
         this.uniqueId = uniqueId;
         this.type = type;
         this.readEntityType = readEntityType;
         this.protocol = protocol;
         this.channel = channel;
         this.remoteAddress = remoteAddress;
-    }
-
-    public UUID getDeviceId() {
-        return deviceId;
     }
 
     public String getUniqueId() {

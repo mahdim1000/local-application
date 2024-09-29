@@ -39,7 +39,6 @@ public class ConnectionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionManager.class);
 
     private final long deviceTimeout;
-    private final Map<UUID, DeviceSession> sessionsByDeviceId = new ConcurrentHashMap<>();
     private final Map<String, DeviceSession> sessionByUniqueId = new ConcurrentHashMap<>();
     private final Timer timer;
     private final ScannerInternalService scannerInternalService;
@@ -50,10 +49,6 @@ public class ConnectionManager {
         this.timer = timer;
         this.scannerInternalService = scannerInternalService;
         deviceTimeout = Config.getConfig().getLong(Keys.STATUS_TIMEOUT);
-    }
-
-    public DeviceSession getDeviceSession(UUID deviceId) {
-        return sessionsByDeviceId.get(deviceId);
     }
 
     public DeviceSession getDeviceSessionByUniqueId(String uniqueId) {
@@ -72,10 +67,9 @@ public class ConnectionManager {
         Optional<Scanner> device = scannerInternalService.findByUniqueId(uniqueId);
 
         if (device.isPresent()) {
-            DeviceSession deviceSession = new DeviceSession(device.get().getId(), device.get().getUniqueId(),
+            DeviceSession deviceSession = new DeviceSession(device.get().getUniqueId(),
                     device.get().getType(), device.get().getReadEntityType(), protocol, channel, remoteAddress);
             sessionByUniqueId.put(device.get().getUniqueId(), deviceSession);
-            sessionsByDeviceId.put(device.get().getId(), deviceSession);
             return deviceSession;
         } else {
             return null;

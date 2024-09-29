@@ -1,4 +1,4 @@
-package org.radargps.localapplication.scanner.dto;
+package org.radargps.localapplication.scanner.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.EnumType;
@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ScannerRequest(
-        UUID id,
         String uniqueId,
         UUID companyId,
         String ipAddress,

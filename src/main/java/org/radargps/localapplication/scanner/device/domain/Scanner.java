@@ -5,13 +5,11 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
-@Table(name = "data_capture_device")
+@Table(name = "scanner")
 @Entity
 public class Scanner {
 
-    @UuidGenerator
     @Id
-    private UUID id;
     private String uniqueId;
     private UUID companyId;
     private String ipAddress;
@@ -39,13 +37,6 @@ public class Scanner {
         this.readEntityType = readEntityType;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public String getUniqueId() {
         return uniqueId;

@@ -11,7 +11,7 @@ import org.springframework.cache.annotation.EnableCaching;
 public class LocalApplication {
 
     public static void main(String[] args) throws Exception {
-        Config.setConfig(args[0]);
+        Config.setConfig("debug.xml");
         var context = SpringApplication.run(LocalApplication.class, args);
 
         var serverManager = context.getBean(ServerManager.class);

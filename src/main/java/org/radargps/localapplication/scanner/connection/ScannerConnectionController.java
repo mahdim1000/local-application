@@ -21,12 +21,12 @@ public class ScannerConnectionController {
     }
 
     @PostMapping
-    public ResponseEntity<ScannerConnectionRequest> createConnection(ScannerConnectionCreateCommand command) {
+    public ResponseEntity<ScannerConnectionRequest> createConnection(@RequestBody ScannerConnectionCreateCommand command) {
         return ResponseEntity.ok(this.scannerConnectionService.createConnection(command));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ScannerConnectionRequest> updateConnection(UUID id, ScannerConnectionUpdateCommand updateCommand) {
+    public ResponseEntity<ScannerConnectionRequest> updateConnection(@PathVariable UUID id, @RequestBody ScannerConnectionUpdateCommand updateCommand) {
         return ResponseEntity.ok(this.scannerConnectionService.partialUpdate(id, updateCommand));
     }
 

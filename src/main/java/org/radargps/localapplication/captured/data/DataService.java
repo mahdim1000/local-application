@@ -16,7 +16,7 @@ public class DataService {
         this.dataRepository = dataRepository;
     }
 
-    @CachePut(value = "data", key = "#data.deviceId")
+    @CachePut(value = "data", key = "#data.uniqueId")
     @Transactional
     public Data insertData(Data data) {
         return dataRepository.save(data);
