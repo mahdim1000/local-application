@@ -10,4 +10,20 @@ public class ProductPalletAssigned extends DomainEvent {
         this.palletId = palletId;
         this.productId = productId;
     }
+
+    public String getPalletId() {
+        return palletId;
+    }
+
+    public void setPalletId(String palletId) {
+        this.palletId = palletId;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
 }

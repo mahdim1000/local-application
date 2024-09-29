@@ -18,6 +18,7 @@ package org.radargps.localapplication.tcp.connection.handler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.radargps.localapplication.scanner.device.ScannerInternalService;
 import org.radargps.localapplication.tcp.connection.handler.hadler.BaseDataHandler;
 import org.radargps.localapplication.tcp.connection.handler.hadler.BufferingHandler;
 import org.radargps.localapplication.tcp.connection.handler.hadler.DatabaseHandler;
@@ -39,13 +40,14 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
     private ApplicationContext context;
     private final List<BaseDataHandler> positionHandlers;
     private final PostProcessHandler postProcessHandler;
+    private final ScannerInternalService scannerInternalService;
     private final Map<Long, Queue<Data>> queues = new HashMap<>();
 
     private synchronized Queue<Data> getQueue(long deviceId) {
         return queues.computeIfAbsent(deviceId, k -> new LinkedList<>());
     }
 
-    public ProcessingHandler(ApplicationContext context) {
+    public ProcessingHandler(ApplicationContext context, ScannerInternalService scannerInternalService) {
 
         positionHandlers = Stream.of(
                         DatabaseHandler.class,
@@ -55,6 +57,7 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
                 .filter(Objects::nonNull)
                 .toList();
         postProcessHandler = context.getBean(PostProcessHandler.class);
+        this.scannerInternalService = scannerInternalService;
     }
 
     @Override
@@ -76,28 +79,13 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
                         iterator.next().handleReceivedData(data, this);
                     }
                 }
-//                finishedProcessing(ctx, data, filtered);
             }
         });
+        finishedProcessing(ctx, data, false);
     }
 
-//    private void finishedProcessing(ChannelHandlerContext ctx, Data data, boolean filtered) {
-//        var device = dataCaptureDeviceService.findByUniqueId(data.getUniqueId());
-//        if (device.isPresent()) {
-//            switch (device.get().getRole()) {
-//                case PALLET_STAGE -> palletStageMessagePublisher.publish();
-//            }
-//
-//
-//            // if scanner == product.stage
-//
-//            // if scanner == assign.product.pallet
-//
-//            // if scanner == unassign.product
-//
-//            // if scanner == unassign.pallet
-//
-//            // if scanner == produck.link
-//        }
-//    }
+    private void finishedProcessing(ChannelHandlerContext ctx, Data data, boolean filtered) {
+        scannerInternalService.updateLatestDeviceData(data.getUniqueId(), data);
+        scannerInternalService.processAndPublish(data);
+    }
 }

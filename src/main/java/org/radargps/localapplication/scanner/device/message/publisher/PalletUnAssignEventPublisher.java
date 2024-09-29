@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PalletUnAssignEventPublisher implements EventPublisher {
-    @Value("${direct.exchange}")
+    @Value("${topic.exchange}")
     private String exchangeName;
 
-    @Value("${data.routing.key}")
-    private String dataRoutingKey;
+    @Value("${unassign.pallet.routing.key}")
+    private String routingKey;
 
     private final RabbitTemplate template;
 
@@ -22,6 +22,6 @@ public class PalletUnAssignEventPublisher implements EventPublisher {
 
     @Override
     public void publish(DomainEvent event) {
-        template.convertAndSend(exchangeName, dataRoutingKey, event);
+        template.convertAndSend(exchangeName, routingKey, event);
     }
 }

@@ -20,6 +20,7 @@ public class ScannerConnection {
     @Enumerated(EnumType.STRING)
     private ScannerConnectionType type;
     private Integer capacity;
+    private UUID companyId;
 
     public UUID getId() {
         return id;
@@ -59,5 +60,13 @@ public class ScannerConnection {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(UUID companyId) {
+        this.companyId = companyId;
     }
 }

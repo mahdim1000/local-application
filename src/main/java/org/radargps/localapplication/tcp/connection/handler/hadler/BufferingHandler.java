@@ -36,7 +36,7 @@ public class BufferingHandler extends BaseDataHandler {
 
     @Override
     public void handleReceivedData(Data data, Callback callback) {
-        scannerInternalService.processAndPublish(data);
+//        scannerInternalService.processAndPublish(data);
         callback.processed(false);
     }
 

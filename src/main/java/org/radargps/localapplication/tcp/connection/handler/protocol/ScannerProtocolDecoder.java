@@ -37,7 +37,8 @@ public class ScannerProtocolDecoder extends BaseProtocolDecoder {
             Channel channel, SocketAddress remoteAddress, Object msg) throws Exception {
 
         String sentence = (String) msg;
-        if (sentence.contains("#")) {
+        if (sentence.contains("#") && sentence.charAt(sentence.length() - 1) == ';') {
+            sentence = sentence.substring(0, sentence.length() - 1);
             var parts = sentence.split("#");
             if (parts.length == 2) {
                 String uniqueId = parts[0];

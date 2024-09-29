@@ -7,21 +7,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PalletEventPublisher implements EventPublisher {
-    @Value("${direct.exchange}")
+public class PalletScannerEventPublisher implements EventPublisher {
+    @Value("${topic.exchange}")
     private String exchangeName;
 
-    @Value("${data.routing.key}")
-    private String dataRoutingKey;
+    @Value("${pallet.scanner.routing.key}")
+    private String routingKey;
 
     private final RabbitTemplate template;
 
-    public PalletEventPublisher(RabbitTemplate template) {
+    public PalletScannerEventPublisher(RabbitTemplate template) {
         this.template = template;
     }
 
     @Override
     public void publish(DomainEvent event) {
-        template.convertAndSend(exchangeName, dataRoutingKey, event);
+        template.convertAndSend(exchangeName, routingKey, event);
     }
 }

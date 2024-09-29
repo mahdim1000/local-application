@@ -24,8 +24,11 @@ public record ScannerConnectionCreateCommand(
 
 ) {
         public record ScannerRecord(
+                @NotNull
                 String uniqueId,
+
+                @NotNull
                 @Enumerated(EnumType.STRING)
-                ScannerReadEntityType scannerReadEntityType
+                ScannerReadEntityType readEntityType
         ) {}
 }

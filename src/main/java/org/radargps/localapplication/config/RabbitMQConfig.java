@@ -9,41 +9,106 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String DATA_QUEUE = "data-queue";
-    public static final String DATA_CAPTURE_DEVICE_EVENT_QUEUE = "data-capture-device-event-queue";
 
-    @Value("${data.routing.key}")
-    private String dataRoutingKey;
-
-    @Value("${data.capture.device.routing.key}")
-    private String deviceRoutingKey;
-
-    @Value("${direct.exchange}")
+    @Value("${topic.exchange}")
     public String exchangeName;
 
+    @Value("${product.scanner.queue.name}")
+    public String productScannerQueueName;
+    @Value("${product.scanner.routing.key}")
+    public String productScannerRoutingKey;
+
+    @Value("${pallet.scanner.queue.name}")
+    public String palletScannerQueueName;
+    @Value("${pallet.scanner.routing.key}")
+    public String palletScannerRoutingKey;
+
+    @Value("${unassign.pallet.queue.name}")
+    public String unAssignPalletQueueName;
+    @Value("${unassign.pallet.routing.key}")
+    public String unAssignPalletRoutingKey;
+
+    @Value("${unassign.product.queue.name}")
+    public String unAssignProductQueueName;
+    @Value("${unassign.product.routing.key}")
+    public String unAssignProductRoutingKey;
+
+    @Value("${pallet.product.queue.name}")
+    public String palletProductQueueName;
+    @Value("${pallet.product.routing.key}")
+    public String palletProductRoutingKey;
+
+    @Value("${product.product.queue.name}")
+    public String productProductQueueName;
+    @Value("${product.product.routing.key}")
+    public String productProductRoutingKey;
+
     @Bean
-    public DirectExchange exchange() {
-        return new DirectExchange(exchangeName);
+    public TopicExchange exchange() {
+        return new TopicExchange(exchangeName);
+    }
+
+
+    // --------------
+    @Bean
+    public Queue productScannerQueue() {
+        return new Queue(productScannerQueueName, true);
     }
 
     @Bean
-    public Queue dataQueue() {
-        return new Queue(DATA_QUEUE, true);
+    public Binding productScannerDataBinding(Queue productScannerQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(productScannerQueue).to(exchange).with(productScannerRoutingKey);
+    }
+
+    //-------------
+    @Bean
+    public Queue palletScannerQueue() {
+        return new Queue(palletScannerQueueName, true);
     }
 
     @Bean
-    public Queue dataCaptureDeviceEventQueue() {
-        return new Queue(DATA_CAPTURE_DEVICE_EVENT_QUEUE, true);
+    public Binding palletScannerDataBinding(Queue palletScannerQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(palletScannerQueue).to(exchange).with(palletScannerRoutingKey);
+    }
+
+    // --------
+    @Bean
+    public Queue unAssignPalletQueue() {
+        return new Queue(unAssignPalletQueueName, true);
     }
 
     @Bean
-    public Binding dataBinding(Queue dataQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(dataQueue).to(exchange).with(dataRoutingKey);
+    public Binding unAssignPalletDataBinding(Queue unAssignPalletQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(unAssignPalletQueue).to(exchange).with(unAssignPalletRoutingKey);
     }
 
+    //---------
+
     @Bean
-    public Binding deviceBinding(Queue dataCaptureDeviceEventQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(dataCaptureDeviceEventQueue).to(exchange).with(deviceRoutingKey);
+    public Queue unAssignProductQueue() {
+        return new Queue(unAssignProductQueueName, true);
+    }
+    @Bean
+    public Binding unAssignProductDataBinding(Queue unAssignProductQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(unAssignProductQueue).to(exchange).with(unAssignProductRoutingKey);
+    }
+    //---------
+    @Bean
+    public Queue palletProductQueue() {
+        return new Queue(palletProductQueueName, true);
+    }
+    @Bean
+    public Binding palletProductDataBinding(Queue palletProductQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(palletProductQueue).to(exchange).with(palletProductRoutingKey);
+    }
+    //-----------
+    @Bean
+    public Queue productProductQueue() {
+        return new Queue(productProductQueueName, true);
+    }
+    @Bean
+    public Binding productProductDataBinding(Queue productProductQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(productProductQueue).to(exchange).with(productProductRoutingKey);
     }
 
     @Bean

@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductPalletEventPublisher implements EventPublisher {
 
-    @Value("${direct.exchange}")
+    @Value("${topic.exchange}")
     private String exchangeName;
 
-    @Value("${data.routing.key}")
-    private String dataRoutingKey;
+    @Value("${pallet.product.routing.key}")
+    private String routingKey;
 
     private final RabbitTemplate template;
     public ProductPalletEventPublisher(RabbitTemplate template) {
@@ -22,6 +22,6 @@ public class ProductPalletEventPublisher implements EventPublisher {
 
     @Override
     public void publish(DomainEvent event) {
-        template.convertAndSend(exchangeName, dataRoutingKey, event);
+        template.convertAndSend(exchangeName, routingKey, event);
     }
 }

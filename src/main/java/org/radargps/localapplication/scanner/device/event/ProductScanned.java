@@ -4,19 +4,19 @@ import org.radargps.localapplication.common.outbox.DomainEvent;
 
 public class ProductScanned extends DomainEvent {
     String macAddress;
-    String product;
+    String productId;
 
-    public ProductScanned(String macAddress, String product) {
+    public ProductScanned(String macAddress, String productId) {
         this.macAddress = macAddress;
-        this.product = product;
+        this.productId = productId;
     }
 
     public String getMacAddress() {
         return macAddress;
     }
 
-    public String getProduct() {
-        return product;
+    public String getProductId() {
+        return productId;
     }
 
 }

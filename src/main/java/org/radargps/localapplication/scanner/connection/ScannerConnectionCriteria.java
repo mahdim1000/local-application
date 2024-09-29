@@ -67,14 +67,14 @@ public class ScannerConnectionCriteria {
 
     }
 
-    public Optional<ScannerConnection> findByFirstScannerIdOrSecondSecannerId(UUID scannerId) {
+    public Optional<ScannerConnection> findByFirstScannerIdOrSecondSecannerId(String scannerId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ScannerConnection> cr = cb.createQuery(ScannerConnection.class);
         Root<ScannerConnection> scannerConnectionRoot = cr.from(ScannerConnection.class);
 
         Predicate predicate = cb.or(
-                cb.equal(scannerConnectionRoot.get("firstScannerId"), scannerId),
-                cb.equal(scannerConnectionRoot.get("secondScannerId"), scannerId)
+                cb.equal(scannerConnectionRoot.get("firstScanner").get("uniqueId"), scannerId),
+                cb.equal(scannerConnectionRoot.get("secondScanner").get("uniqueId"), scannerId)
         );
 
         cr.select(scannerConnectionRoot).where(predicate);

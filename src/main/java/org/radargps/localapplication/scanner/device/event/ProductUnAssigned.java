@@ -10,4 +10,20 @@ public class ProductUnAssigned extends DomainEvent {
         this.macAddress = macAddress;
         this.productId = productId;
     }
+
+    public String getMacAddress() {
+        return macAddress;
+    }
+
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
 }
