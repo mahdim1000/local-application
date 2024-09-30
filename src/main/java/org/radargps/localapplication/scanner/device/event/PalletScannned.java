@@ -3,27 +3,32 @@ package org.radargps.localapplication.scanner.device.event;
 import org.radargps.localapplication.common.outbox.DomainEvent;
 
 public class PalletScannned extends DomainEvent {
-    private String macAddress;
-    private String palletId;
+    private final DataRecord data;
 
     public PalletScannned(String macAddress, String palletId) {
-        this.macAddress = macAddress;
-        this.palletId = palletId;
+        super("pallet-scanner");
+        this.data = new DataRecord(macAddress, palletId);
     }
 
-    public String getMacAddress() {
-        return macAddress;
+    public DataRecord getData() {
+        return data;
     }
 
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
-    }
+    static class DataRecord {
+        String macAddress;
+        String palletId;
 
-    public String getPalletId() {
-        return palletId;
-    }
+        public DataRecord(String macAddress, String palletId) {
+            this.macAddress = macAddress;
+            this.palletId = palletId;
+        }
 
-    public void setPalletId(String palletId) {
-        this.palletId = palletId;
+        public String getMacAddress() {
+            return macAddress;
+        }
+
+        public String getPalletId() {
+            return palletId;
+        }
     }
 }

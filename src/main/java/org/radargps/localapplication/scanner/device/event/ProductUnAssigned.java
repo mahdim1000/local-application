@@ -3,27 +3,32 @@ package org.radargps.localapplication.scanner.device.event;
 import org.radargps.localapplication.common.outbox.DomainEvent;
 
 public class ProductUnAssigned extends DomainEvent {
-    private String macAddress;
-    String productId;
+    private final DataRecord data;
 
     public ProductUnAssigned(String macAddress, String productId) {
-        this.macAddress = macAddress;
-        this.productId = productId;
+        super("unassign-product");
+        this.data = new DataRecord(macAddress, productId);
     }
 
-    public String getMacAddress() {
-        return macAddress;
+    public DataRecord getData() {
+        return data;
     }
 
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
-    }
+    static class DataRecord {
+        String macAddress;
+        String productId;
 
-    public String getProductId() {
-        return productId;
-    }
+        public DataRecord(String macAddress, String productId) {
+            this.macAddress = macAddress;
+            this.productId = productId;
+        }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+        public String getMacAddress() {
+            return macAddress;
+        }
+
+        public String getProductId() {
+            return productId;
+        }
     }
 }

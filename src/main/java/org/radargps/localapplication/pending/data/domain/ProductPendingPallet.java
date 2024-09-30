@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Table(name = "product_pending_pallet")
@@ -12,9 +13,23 @@ public class ProductPendingPallet {
 
     @Id
     private UUID id;
-    private UUID productId;
+    private String productScanner;
+    private String palletScanner;
+    private String productData;
     private Long time;
     private UUID companyId;
+
+    public ProductPendingPallet(String productScanner,
+                                String palletScanner,
+                                String productData,
+                                UUID companyId) {
+        this.productScanner = productScanner;
+        this.palletScanner = palletScanner;
+        this.productData = productData;
+        this.companyId = companyId;
+        this.id = UUID.randomUUID();
+        this.time = Instant.now().getEpochSecond();
+    }
 
     public UUID getId() {
         return id;
@@ -24,12 +39,28 @@ public class ProductPendingPallet {
         this.id = id;
     }
 
-    public UUID getProductId() {
-        return productId;
+    public String getProductScanner() {
+        return productScanner;
     }
 
-    public void setProductId(UUID productId) {
-        this.productId = productId;
+    public void setProductScanner(String productScanner) {
+        this.productScanner = productScanner;
+    }
+
+    public String getPalletScanner() {
+        return palletScanner;
+    }
+
+    public void setPalletScanner(String palletScanner) {
+        this.palletScanner = palletScanner;
+    }
+
+    public String getProductData() {
+        return productData;
+    }
+
+    public void setProductData(String productData) {
+        this.productData = productData;
     }
 
     public Long getTime() {

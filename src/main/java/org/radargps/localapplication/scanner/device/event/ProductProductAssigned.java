@@ -5,27 +5,32 @@ import org.radargps.localapplication.common.outbox.DomainEvent;
 import java.util.UUID;
 
 public class ProductProductAssigned extends DomainEvent {
-    private String productLink;
-    private String productId;
+    private final DataRecord data;
 
     public ProductProductAssigned(String productLink, String productId) {
-        this.productLink = productLink;
-        this.productId = productId;
+        super("product-product");
+        this.data = new DataRecord(productId, productLink);
     }
 
-    public String getProductLink() {
-        return productLink;
+    public DataRecord getData() {
+        return data;
     }
 
-    public void setProductLink(String productLink) {
-        this.productLink = productLink;
-    }
+    static class DataRecord {
+        String productId;
+        String qrcode;
 
-    public String getProductId() {
-        return productId;
-    }
+        public DataRecord(String productId, String productLink) {
+            this.productId = productId;
+            this.qrcode = productLink;
+        }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+        public String getProductId() {
+            return productId;
+        }
+
+        public String getQrcode() {
+            return qrcode;
+        }
     }
 }

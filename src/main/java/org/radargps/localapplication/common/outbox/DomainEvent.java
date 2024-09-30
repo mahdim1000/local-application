@@ -2,23 +2,18 @@ package org.radargps.localapplication.common.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Payload;
 
 import java.util.Map;
 
 public abstract class DomainEvent {
-    protected String type;
+    protected String pattern = "product-scanner";
 
-    public DomainEvent() {
-        this.type = this.getClass().getSimpleName();
+    public DomainEvent(String pattern) {
+        this.pattern = pattern;
     }
 
-    public String getType() {
-        return type;
+    public String getPattern() {
+        return pattern;
     }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-
 }

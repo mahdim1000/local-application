@@ -63,12 +63,17 @@ public class ScannerInternalService {
         if (scanner.getType() == null) {
             scanner.setType(ScannerType.QR_SCANNER);
         }
-        if (scanner.getRole() == null) {
-            scanner.setRole(ScannerRole.PRODUCT_SCANNER);
-        }
         if (scanner.getReadEntityType() == null) {
             scanner.setReadEntityType(ScannerReadEntityType.PRODUCT);
         }
+        if (scanner.getRole() == null) {
+            switch (scanner.getReadEntityType()) {
+                case PRODUCT_LINK -> scanner.setRole(ScannerRole.PRODUCT_PRODUCT_ASSIGNER);
+                case PALLET -> scanner.setRole(ScannerRole.PALLET_SCANNER);
+                default -> scanner.setRole(ScannerRole.PRODUCT_SCANNER);
+            }
+        }
+
         return scannerRepository.save(scanner);
     }
 
@@ -91,14 +96,14 @@ public class ScannerInternalService {
         scannerRepository.setLastDataIdAndLastDataTimeByUniqueId(uniqueId, data.getId(), data.getServerTime());
     }
 
-//    @Cacheable(value = "scanner-data", key = "#uniqueId")
+    //    @Cacheable(value = "scanner-data", key = "#uniqueId")
     @Transactional
     public Optional<Data> findLatestScannerData(String uniqueId) {
         var scanner = findByUniqueId(uniqueId);
         if (scanner.isPresent() && scanner.get().getLastDataId() != null) {
             return dataService.findById(scanner.get().getLastDataId());
         }
-       return Optional.empty();
+        return Optional.empty();
     }
 
     @Cacheable(value = "scanner", key = "#uniqueId")
@@ -132,110 +137,96 @@ public class ScannerInternalService {
         var event = new ProductScanned(device.getUniqueId(), data.getData());
         productScannerEventPublisher.publish(event);
     }
+
     private void palletScanned(Scanner device, Data data) {
         var event = new PalletScannned(device.getUniqueId(), data.getData());
         palletScannerEventPublisher.publish(event);
     }
+
     private void productPalletAssigned(Scanner scanner, Data data) {
-        var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
-        if (connection.isPresent()) {
-                String palletId = null;
-                String productId = null;
+        if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
+            var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+            if (connection.isPresent()) {
+                var productScanner = scanner;
+                var productData = data;
 
-                if (scanner.getUniqueId().equals(connection.get().getFirstScanner().getUniqueId())) {
-                    if (connection.get().getFirstScanner().getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                        productId = data.getData();
-                        var secondScannerData = findLatestScannerData(connection.get().getSecondScanner().getUniqueId());
-                        if (secondScannerData.isPresent()) {
-                            palletId = secondScannerData.get().getData();
-                        }
-                    } else {
-                        palletId = data.getData();
-                        var secondScannerData = findLatestScannerData(connection.get().getSecondScanner().getUniqueId());
-                        if (secondScannerData.isPresent()) {
-                            productId = secondScannerData.get().getData();
-                        }
-                    }
-                } else {
-                    if (scanner.getUniqueId().equals(connection.get().getSecondScanner().getUniqueId())) {
-                        if (connection.get().getSecondScanner().getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                            productId = data.getData();
-                            var firstScannerData = findLatestScannerData(connection.get().getFirstScanner().getUniqueId());
-                            if (firstScannerData.isPresent()) {
-                                palletId = firstScannerData.get().getData();
-                            }
-                        } else {
-                            palletId = data.getData();
-                            var firstScannerData = findLatestScannerData(connection.get().getFirstScanner().getUniqueId());
-                            if (firstScannerData.isPresent()) {
-                                productId = firstScannerData.get().getData();
-                            }
-                        }
-                    }
-                }
+                var palletScanner = connection.get().getFirstScanner().getUniqueId().equals(productScanner.getUniqueId())
+                        ? connection.get().getSecondScanner()
+                        : connection.get().getFirstScanner();
+                var palletData = findLatestScannerData(palletScanner.getUniqueId());
 
-                if (palletId != null && productId != null) {
-                    var event = new ProductPalletAssigned(palletId, productId);
+                if (palletData.isPresent()
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.getServerTime(), palletData.get().getServerTime(), 3600)) {
+                    var event = new ProductPalletAssigned(palletData.get().getData(), productData.getData());
                     productPalletEventPublisher.publish(event);
                 }
+
+            }
+        } else if (scanner.getReadEntityType().equals(ScannerReadEntityType.PALLET)) {
+            var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+            if (connection.isPresent()) {
+                var palletScanner = scanner;
+                var palletData = data;
+
+                var productScanner = connection.get().getFirstScanner().getUniqueId().equals(palletScanner.getUniqueId())
+                        ? connection.get().getSecondScanner()
+                        : connection.get().getFirstScanner();
+                var productData = findLatestScannerData(productScanner.getUniqueId());
+
+                if (productData.isPresent()
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.get().getServerTime(), palletData.getServerTime(), 3600)) {
+                    var event = new ProductPalletAssigned(palletData.getData(), productData.get().getData());
+                    productPalletEventPublisher.publish(event);
+                }
+            }
         }
     }
+
     private void productUnAssigned(Scanner device, Data data) {
         var event = new ProductUnAssigned(device.getUniqueId(), data.getData());
         productScannerEventPublisher.publish(event);
     }
+
     private void palletUnAssigned(Scanner device, Data data) {
         var event = new ProductUnAssigned(device.getUniqueId(), data.getData());
         palletScannerEventPublisher.publish(event);
     }
-    private void productProductAssigned(Scanner scanner, Data data) {
-        if (scanner.getReadEntityType() == null) {
-            return;
-        }
-        var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
-        if (connection.isPresent()) {
-            String link = null;
-            String productId = null;
 
-            if (scanner.getUniqueId().equals(connection.get().getFirstScanner().getUniqueId())) {
-                if (connection.get().getFirstScanner().getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                    productId = data.getData();
-                    var secondScannerData = findLatestScannerData(connection.get().getSecondScanner().getUniqueId());
-                    if (secondScannerData.isPresent()
-                            && TimeUtil.isTimestampDifferenceLessThan(data.getServerTime(), secondScannerData.get().getServerTime(), 5)) {
-                        link = secondScannerData.get().getData();
-                    }
-                } else {
-                    link = data.getData();
-                    var secondScannerData = findLatestScannerData(connection.get().getSecondScanner().getUniqueId());
-                    if (secondScannerData.isPresent()
-                            && TimeUtil.isTimestampDifferenceLessThan(data.getServerTime(), secondScannerData.get().getServerTime(), 5)) {
-                        productId = secondScannerData.get().getData();
-                    }
-                }
-            } else {
-                if (scanner.getUniqueId().equals(connection.get().getSecondScanner().getUniqueId())) {
-                    if (connection.get().getSecondScanner().getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
-                        productId = data.getData();
-                        var firstScannerData = findLatestScannerData(connection.get().getFirstScanner().getUniqueId());
-                        if (firstScannerData.isPresent()
-                                && TimeUtil.isTimestampDifferenceLessThan(data.getServerTime(), firstScannerData.get().getServerTime(), 500)) {
-                            link = firstScannerData.get().getData();
-                        }
-                    } else {
-                        link = data.getData();
-                        var firstScannerData = findLatestScannerData(connection.get().getFirstScanner().getUniqueId());
-                        if (firstScannerData.isPresent()
-                                && TimeUtil.isTimestampDifferenceLessThan(data.getServerTime(), firstScannerData.get().getServerTime(), 500)) {
-                            productId = firstScannerData.get().getData();
-                        }
-                    }
+    private void productProductAssigned(Scanner scanner, Data data) {
+        if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
+            var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+            if (connection.isPresent()) {
+                var productScanner = scanner;
+                var productData = data;
+
+                var productLinkScanner = connection.get().getFirstScanner().getUniqueId().equals(productScanner.getUniqueId())
+                        ? connection.get().getSecondScanner()
+                        : connection.get().getFirstScanner();
+                var productLinkData = findLatestScannerData(productLinkScanner.getUniqueId());
+
+                if (productLinkData.isPresent()
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.getServerTime(), productLinkData.get().getServerTime(), 5000)) {
+                    var event = new ProductProductAssigned(productLinkData.get().getData(), productData.getData());
+                    productPalletEventPublisher.publish(event);
                 }
             }
+        } else if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT_LINK)) {
+            var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+            if (connection.isPresent()) {
+                var productLinkScanner = scanner;
+                var productLinkData = data;
 
-            if (link != null && productId != null) {
-                var event = new ProductProductAssigned(link, productId);
-                productProductEventPublisher.publish(event);
+                var productScanner = connection.get().getFirstScanner().getUniqueId().equals(productLinkScanner.getUniqueId())
+                        ? connection.get().getSecondScanner()
+                        : connection.get().getFirstScanner();
+                var productData = findLatestScannerData(productScanner.getUniqueId());
+
+                if (productData.isPresent()
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.get().getServerTime(), productLinkData.getServerTime(), 5000)) {
+
+                    var event = new ProductProductAssigned(productLinkData.getData(), productData.get().getData());
+                    productPalletEventPublisher.publish(event);
+                }
             }
         }
     }

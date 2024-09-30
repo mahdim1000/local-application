@@ -44,7 +44,6 @@ public class StandardLoggingHandler extends ChannelDuplexHandler {
     public StandardLoggingHandler(String protocol) {
         this.protocol = protocol;
         this.decodeTextData = Config.getConfig().getBoolean(Keys.LOGGER_TEXT_PROTOCOL);
-
     }
 
     @Override

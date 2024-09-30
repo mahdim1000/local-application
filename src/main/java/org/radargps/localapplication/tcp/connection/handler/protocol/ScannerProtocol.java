@@ -31,7 +31,7 @@ public class ScannerProtocol extends BaseProtocol {
         addServer(new TrackerServer(context, getName(), false) {
             @Override
             protected void addProtocolHandlers(PipelineBuilder pipeline, Config config) {
-                pipeline.addLast(new CharacterDelimiterFrameDecoder(8048, false, "\r\n", "\n", ";", "*"));
+                pipeline.addLast(new CharacterDelimiterFrameDecoder(80048, true, "\r\n", "\n", ";", "\r"));
                 pipeline.addLast(new StringEncoder());
                 pipeline.addLast(new StringDecoder());
                 pipeline.addLast(scannerProtocolDecoder(ScannerProtocol.this, connectionManager));

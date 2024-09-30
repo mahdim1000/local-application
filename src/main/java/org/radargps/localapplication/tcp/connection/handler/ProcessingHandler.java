@@ -77,15 +77,19 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
                 if (!filtered) {
                     if (iterator.hasNext()) {
                         iterator.next().handleReceivedData(data, this);
+                    } else {
+                        postProcessHandler.handleReceivedData(data, (f) -> {
+                            System.out.println("postprocess: " + f);
+                        });
                     }
                 }
             }
         });
-        finishedProcessing(ctx, data, false);
+        finishedProcessing(ctx, data, true);
     }
 
     private void finishedProcessing(ChannelHandlerContext ctx, Data data, boolean filtered) {
-        scannerInternalService.updateLatestDeviceData(data.getUniqueId(), data);
+//        scannerInternalService.updateLatestDeviceData(data.getUniqueId(), data);
         scannerInternalService.processAndPublish(data);
     }
 }

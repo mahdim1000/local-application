@@ -1,10 +1,12 @@
 package org.radargps.localapplication.scanner.connection;
 
+import org.radargps.localapplication.common.errors.exception.InvalidArgumentException;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnection;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnectionType;
 import org.radargps.localapplication.scanner.device.ScannerInternalService;
+import org.radargps.localapplication.scanner.device.domain.ScannerRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
@@ -32,16 +34,32 @@ public class ScannerConnectionInternalService {
     public ScannerConnection create(ScannerConnection createConnection) {
         var firstScanner = scannerInternalService.findByUniqueId(createConnection.getFirstScanner().getUniqueId())
                 .orElseThrow(ResourceNotFoundException::new);
+        var scannerRole = connectionTypeToRole(createConnection.getType());
+        if (scannerRole == null) {
+            throw new InvalidArgumentException("type is not valid");
+        }
         firstScanner.setReadEntityType(createConnection.getFirstScanner().getReadEntityType());
+        firstScanner.setRole(scannerRole);
         scannerInternalService.updateDevice(firstScanner);
 
         var secondScanner = scannerInternalService.findByUniqueId(createConnection.getSecondScanner().getUniqueId())
                 .orElseThrow(ResourceNotFoundException::new);
         secondScanner.setReadEntityType(createConnection.getSecondScanner().getReadEntityType());
+        secondScanner.setRole(scannerRole);
         scannerInternalService.updateDevice(secondScanner);
 
         createConnection.setId(UUID.randomUUID());
         return scannerConnectionRepository.save(createConnection);
+    }
+    private ScannerRole connectionTypeToRole(ScannerConnectionType type) {
+        if (type.equals(ScannerConnectionType.PRODUCT_PALLET_ASSIGN)) {
+            return ScannerRole.PRODUCT_PALLET_ASSIGNER;
+        }
+        if (type.equals(ScannerConnectionType.PRODUCT_PRODUCT_LINK_ASSIGN)) {
+            return ScannerRole.PRODUCT_PRODUCT_ASSIGNER;
+        } else {
+            return null;
+        }
     }
 
     public Optional<ScannerConnection> findById(UUID scannerConnectionId) {

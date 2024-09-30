@@ -3,27 +3,32 @@ package org.radargps.localapplication.scanner.device.event;
 import org.radargps.localapplication.common.outbox.DomainEvent;
 
 public class ProductPalletAssigned extends DomainEvent {
-    private String palletId;
-    private String productId;
+    private final DataRecord data;
 
     public ProductPalletAssigned(String palletId, String productId) {
-        this.palletId = palletId;
-        this.productId = productId;
+        super("product-pallet");
+        this.data = new DataRecord(productId, palletId);
     }
 
-    public String getPalletId() {
-        return palletId;
+    public DataRecord getData() {
+        return data;
     }
 
-    public void setPalletId(String palletId) {
-        this.palletId = palletId;
-    }
+    static class DataRecord {
+        String productId;
+        String palletId;
 
-    public String getProductId() {
-        return productId;
-    }
+        public DataRecord(String productId, String palletId) {
+            this.productId = productId;
+            this.palletId = palletId;
+        }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+        public String getProductId() {
+            return productId;
+        }
+
+        public String getPalletId() {
+            return palletId;
+        }
     }
 }
