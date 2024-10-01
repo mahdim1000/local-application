@@ -6,7 +6,7 @@ public class ProductPalletAssigned extends DomainEvent {
     private final DataRecord data;
 
     public ProductPalletAssigned(String palletId, String productId) {
-        super("product-pallet");
+        super("pallet-product");
         this.data = new DataRecord(productId, palletId);
     }
 

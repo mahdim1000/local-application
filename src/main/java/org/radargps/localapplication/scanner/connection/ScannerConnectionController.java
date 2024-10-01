@@ -22,7 +22,8 @@ public class ScannerConnectionController {
 
     @PostMapping
     public ResponseEntity<ScannerConnectionRequest> createConnection(@RequestBody ScannerConnectionCreateCommand command) {
-        return ResponseEntity.ok(this.scannerConnectionService.createConnection(command));
+        ScannerConnectionRequest connection = this.scannerConnectionService.createConnection(command);
+        return ResponseEntity.ok(connection);
     }
 
     @PatchMapping("/{id}")

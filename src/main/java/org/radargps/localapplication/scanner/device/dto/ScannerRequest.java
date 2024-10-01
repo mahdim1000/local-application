@@ -21,6 +21,7 @@ public record ScannerRequest(
         @Enumerated(EnumType.STRING)
         ScannerRole role,
         UUID lastDataId,
+        String lastDataValue,
         Long lastDataTime
 ) {
 }

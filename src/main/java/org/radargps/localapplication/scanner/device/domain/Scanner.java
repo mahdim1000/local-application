@@ -23,6 +23,7 @@ public class Scanner {
     @Enumerated(EnumType.STRING)
     private ScannerRole role;
     private UUID lastDataId;
+    private String lastDataValue;
     private Long lastDataTime;
 
     public Scanner() {
@@ -92,6 +93,14 @@ public class Scanner {
 
     public void setLastDataId(UUID lastDataId) {
         this.lastDataId = lastDataId;
+    }
+
+    public String getLastDataValue() {
+        return lastDataValue;
+    }
+
+    public void setLastDataValue(String lastDataValue) {
+        this.lastDataValue = lastDataValue;
     }
 
     public Long getLastDataTime() {

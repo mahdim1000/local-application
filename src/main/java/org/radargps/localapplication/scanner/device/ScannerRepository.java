@@ -14,8 +14,8 @@ import java.util.UUID;
 public interface ScannerRepository extends JpaRepository<Scanner, String> {
 
     @Modifying
-    @Query("UPDATE Scanner d SET d.lastDataId = :dataId, d.lastDataTime = :lastServerTime WHERE d.uniqueId = :uniqueId")
-    void setLastDataIdAndLastDataTimeByUniqueId(String uniqueId, UUID dataId, Long lastServerTime);
+    @Query("UPDATE Scanner d SET d.lastDataId = :dataId, d.lastDataValue = :dataValue, d.lastDataTime = :lastServerTime WHERE d.uniqueId = :uniqueId")
+    void setLastDataIdAndLastDataTimeByUniqueId(String uniqueId, UUID dataId, String dataValue, Long lastServerTime);
 
     Optional<Scanner> findByUniqueId(String uniqueId);
     Page<Scanner> findByCompanyId(UUID companyId, Pageable pageable);

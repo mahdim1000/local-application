@@ -2,6 +2,7 @@ package org.radargps.localapplication.scanner.connection;
 
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
+import org.radargps.localapplication.scanner.connection.domain.ScannerConnection;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnectionType;
 import org.radargps.localapplication.scanner.connection.dto.ScannerConnectionCreateCommand;
 import org.radargps.localapplication.scanner.connection.dto.ScannerConnectionRequest;
@@ -26,7 +27,8 @@ public class ScannerConnectionService {
     @Transactional
     public ScannerConnectionRequest createConnection(ScannerConnectionCreateCommand createCommand) {
         var createConnection = scannerConnectionMapper.toEntity(createCommand);
-        return scannerConnectionMapper.toRequest(this.scannerConnectionInternalService.create(createConnection));
+        ScannerConnection scannerConnection = this.scannerConnectionInternalService.create(createConnection);
+        return scannerConnectionMapper.toRequest(scannerConnection);
     }
 
     @Transactional(readOnly = true)

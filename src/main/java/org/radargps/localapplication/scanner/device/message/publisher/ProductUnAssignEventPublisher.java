@@ -22,6 +22,6 @@ public class ProductUnAssignEventPublisher implements EventPublisher {
 
     @Override
     public void publish(DomainEvent event) {
-        template.convertAndSend(routingKey, event);
+        template.convertAndSend(exchangeName, routingKey, event);
     }
 }

@@ -19,6 +19,9 @@ public class ProductPendingPallet {
     private Long time;
     private UUID companyId;
 
+    public ProductPendingPallet() {
+    }
+
     public ProductPendingPallet(String productScanner,
                                 String palletScanner,
                                 String productData,

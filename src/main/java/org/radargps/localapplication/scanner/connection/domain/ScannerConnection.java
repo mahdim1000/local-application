@@ -17,9 +17,11 @@ public class ScannerConnection {
     @OneToOne
     private Scanner secondScanner;
 
+    @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)
     private ScannerConnectionType type;
     private Integer capacity;
+    private int currentAssignedCount;
     private UUID companyId;
 
     public UUID getId() {
@@ -60,6 +62,14 @@ public class ScannerConnection {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public int getCurrentAssignedCount() {
+        return currentAssignedCount;
+    }
+
+    public void setCurrentAssignedCount(int currentAssignedCount) {
+        this.currentAssignedCount = currentAssignedCount;
     }
 
     public UUID getCompanyId() {

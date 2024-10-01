@@ -3,6 +3,8 @@ package org.radargps.localapplication.scanner.device;
 import com.github.benmanes.caffeine.cache.Cache;
 import org.radargps.localapplication.captured.data.DataService;
 import org.radargps.localapplication.common.util.TimeUtil;
+import org.radargps.localapplication.pending.data.ProductPendingPalletInternalService;
+import org.radargps.localapplication.pending.data.domain.ProductPendingPallet;
 import org.radargps.localapplication.scanner.connection.ScannerConnectionInternalService;
 import org.radargps.localapplication.scanner.device.domain.Scanner;
 import org.radargps.localapplication.common.pageable.Page;
@@ -11,10 +13,7 @@ import org.radargps.localapplication.scanner.device.domain.ScannerReadEntityType
 import org.radargps.localapplication.scanner.device.domain.ScannerRole;
 import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.scanner.device.event.*;
-import org.radargps.localapplication.scanner.device.message.publisher.PalletScannerEventPublisher;
-import org.radargps.localapplication.scanner.device.message.publisher.ProductScannerEventPublisher;
-import org.radargps.localapplication.scanner.device.message.publisher.ProductPalletEventPublisher;
-import org.radargps.localapplication.scanner.device.message.publisher.ProductProductEventPublisher;
+import org.radargps.localapplication.scanner.device.message.publisher.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import java.util.UUID;
 public class ScannerInternalService {
     private final ScannerRepository scannerRepository;
     private final ScannerConnectionInternalService scannerConnectionInternalService;
+    private final ProductPendingPalletInternalService productPendingPalletInternalService;
 //    private final DataService dataService;
 //    private final OutboxService outboxService;
 
@@ -37,23 +39,29 @@ public class ScannerInternalService {
     private final ProductScannerEventPublisher productScannerEventPublisher;
     private final ProductPalletEventPublisher productPalletEventPublisher;
     private final ProductProductEventPublisher productProductEventPublisher;
+    private final PalletUnAssignEventPublisher palletUnAssignEventPublisher;
+    private final ProductUnAssignEventPublisher productUnAssignEventPublisher;
     private final DataService dataService;
     private final Cache<UUID, Data> deviceLastDataCache;
 
     public ScannerInternalService(ScannerRepository scannerRepository,
                                   @Lazy ScannerConnectionInternalService scannerConnectionInternalService,
+                                  ProductPendingPalletInternalService productPendingPalletInternalService,
                                   PalletScannerEventPublisher palletScannerEventPublisher,
                                   ProductScannerEventPublisher productScannerEventPublisher,
                                   ProductPalletEventPublisher productPalletEventPublisher,
-                                  ProductProductEventPublisher productProductEventPublisher,
+                                  ProductProductEventPublisher productProductEventPublisher, PalletUnAssignEventPublisher palletUnAssignEventPublisher, ProductUnAssignEventPublisher productUnAssignEventPublisher,
                                   DataService dataService,
                                   Cache deviceLastDataCache) {
         this.scannerRepository = scannerRepository;
         this.scannerConnectionInternalService = scannerConnectionInternalService;
+        this.productPendingPalletInternalService = productPendingPalletInternalService;
         this.palletScannerEventPublisher = palletScannerEventPublisher;
         this.productScannerEventPublisher = productScannerEventPublisher;
         this.productPalletEventPublisher = productPalletEventPublisher;
         this.productProductEventPublisher = productProductEventPublisher;
+        this.palletUnAssignEventPublisher = palletUnAssignEventPublisher;
+        this.productUnAssignEventPublisher = productUnAssignEventPublisher;
         this.dataService = dataService;
         this.deviceLastDataCache = deviceLastDataCache;
     }
@@ -93,7 +101,7 @@ public class ScannerInternalService {
     @CachePut(value = "scanner", key = "#uniqueId")
     @Transactional
     public void updateLatestDeviceData(String uniqueId, Data data) {
-        scannerRepository.setLastDataIdAndLastDataTimeByUniqueId(uniqueId, data.getId(), data.getServerTime());
+        scannerRepository.setLastDataIdAndLastDataTimeByUniqueId(uniqueId, data.getId(), data.getData(), data.getServerTime());
     }
 
     //    @Cacheable(value = "scanner-data", key = "#uniqueId")
@@ -133,17 +141,27 @@ public class ScannerInternalService {
         }
     }
 
-    private void productScanned(Scanner device, Data data) {
-        var event = new ProductScanned(device.getUniqueId(), data.getData());
+    private void productScanned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
+        var event = new ProductScanned(scanner.getUniqueId(), data.getData());
         productScannerEventPublisher.publish(event);
     }
 
-    private void palletScanned(Scanner device, Data data) {
-        var event = new PalletScannned(device.getUniqueId(), data.getData());
+    private void palletScanned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
+        var event = new PalletScannned(scanner.getUniqueId(), data.getData());
         palletScannerEventPublisher.publish(event);
     }
 
+    @Transactional
     private void productPalletAssigned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
         if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
             var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
             if (connection.isPresent()) {
@@ -156,9 +174,15 @@ public class ScannerInternalService {
                 var palletData = findLatestScannerData(palletScanner.getUniqueId());
 
                 if (palletData.isPresent()
-                        && TimeUtil.isTimestampDifferenceLessThan(productData.getServerTime(), palletData.get().getServerTime(), 3600)) {
+                        && connection.get().getCurrentAssignedCount() < connection.get().getCapacity()) {
                     var event = new ProductPalletAssigned(palletData.get().getData(), productData.getData());
                     productPalletEventPublisher.publish(event);
+                    connection.get().setCurrentAssignedCount(connection.get().getCurrentAssignedCount() + 1);
+                    scannerConnectionInternalService.update(connection.get());
+                } else {
+                    productPendingPalletInternalService.save(
+                            new ProductPendingPallet(productScanner.getUniqueId(), palletScanner.getUniqueId(),
+                                    productData.getData(), connection.get().getCompanyId()));
                 }
 
             }
@@ -173,26 +197,59 @@ public class ScannerInternalService {
                         : connection.get().getFirstScanner();
                 var productData = findLatestScannerData(productScanner.getUniqueId());
 
-                if (productData.isPresent()
-                        && TimeUtil.isTimestampDifferenceLessThan(productData.get().getServerTime(), palletData.getServerTime(), 3600)) {
-                    var event = new ProductPalletAssigned(palletData.getData(), productData.get().getData());
-                    productPalletEventPublisher.publish(event);
+                if (!Objects.equals(palletScanner.getLastDataValue(), data.getData())) {
+                    connection.get().setCurrentAssignedCount(0);
                 }
+
+                if (connection.get().getCurrentAssignedCount() < connection.get().getCapacity()) {
+                    for (var ppp : productPendingPalletInternalService.findByPalletScanner(palletScanner.getUniqueId())) {
+                        var event = new ProductPalletAssigned(palletData.getData(), ppp.getProductData());
+                        productPalletEventPublisher.publish(event);
+                        connection.get().setCurrentAssignedCount(connection.get().getCurrentAssignedCount() + 1);
+                        scannerConnectionInternalService.update(connection.get());
+                        productPendingPalletInternalService.deleteAllById(List.of(ppp.getId()));
+
+                        if (connection.get().getCurrentAssignedCount() == connection.get().getCapacity()) {
+                            break;
+                        }
+                    }
+                }
+//                if (productData.isPresent()) {
+//                    if (connection.get().getCurrentAssignedCount() < connection.get().getCapacity()) {
+//                        var event = new ProductPalletAssigned(palletData.getData(), productData.get().getData());
+//                        productPalletEventPublisher.publish(event);
+//                        connection.get().setCurrentAssignedCount(connection.get().getCurrentAssignedCount() + 1);
+//                        scannerConnectionInternalService.update(connection.get());
+//                    } else {
+//                        productPendingPalletInternalService.save(
+//                                new ProductPendingPallet(productScanner.getUniqueId(), palletScanner.getUniqueId(),
+//                                        productData.get().getData(), connection.get().getCompanyId()));
+//                    }
+//                }
             }
         }
     }
 
-    private void productUnAssigned(Scanner device, Data data) {
-        var event = new ProductUnAssigned(device.getUniqueId(), data.getData());
-        productScannerEventPublisher.publish(event);
+    private void productUnAssigned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
+        var event = new ProductUnAssigned(scanner.getUniqueId(), data.getData());
+        productUnAssignEventPublisher.publish(event);
     }
 
-    private void palletUnAssigned(Scanner device, Data data) {
-        var event = new ProductUnAssigned(device.getUniqueId(), data.getData());
-        palletScannerEventPublisher.publish(event);
+    private void palletUnAssigned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
+        var event = new PalletUnAssigned(scanner.getUniqueId(), data.getData());
+        palletUnAssignEventPublisher.publish(event);
     }
 
     private void productProductAssigned(Scanner scanner, Data data) {
+        if (scanner.getLastDataValue() != null && scanner.getLastDataValue().equals(data.getData())) {
+            return;
+        }
         if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT)) {
             var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
             if (connection.isPresent()) {
@@ -205,9 +262,9 @@ public class ScannerInternalService {
                 var productLinkData = findLatestScannerData(productLinkScanner.getUniqueId());
 
                 if (productLinkData.isPresent()
-                        && TimeUtil.isTimestampDifferenceLessThan(productData.getServerTime(), productLinkData.get().getServerTime(), 5000)) {
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.getServerTime(), productLinkData.get().getServerTime(), 5)) {
                     var event = new ProductProductAssigned(productLinkData.get().getData(), productData.getData());
-                    productPalletEventPublisher.publish(event);
+                    productProductEventPublisher.publish(event);
                 }
             }
         } else if (scanner.getReadEntityType().equals(ScannerReadEntityType.PRODUCT_LINK)) {
@@ -222,10 +279,10 @@ public class ScannerInternalService {
                 var productData = findLatestScannerData(productScanner.getUniqueId());
 
                 if (productData.isPresent()
-                        && TimeUtil.isTimestampDifferenceLessThan(productData.get().getServerTime(), productLinkData.getServerTime(), 5000)) {
+                        && TimeUtil.isTimestampDifferenceLessThan(productData.get().getServerTime(), productLinkData.getServerTime(), 5)) {
 
                     var event = new ProductProductAssigned(productLinkData.getData(), productData.get().getData());
-                    productPalletEventPublisher.publish(event);
+                    productProductEventPublisher.publish(event);
                 }
             }
         }

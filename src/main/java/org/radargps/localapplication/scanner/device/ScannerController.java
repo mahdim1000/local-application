@@ -3,7 +3,6 @@ package org.radargps.localapplication.scanner.device;
 import jakarta.validation.Valid;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
-import org.radargps.localapplication.scanner.connection.temp.ProductPalletScannerConnectionCommand;
 import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
 import org.radargps.localapplication.scanner.device.dto.ScannerRequest;
 import org.radargps.localapplication.scanner.device.dto.ScannerUpdateCommand;

@@ -10,12 +10,13 @@ import java.util.UUID;
 
 public record ScannerConnectionRequest(
         UUID id,
-        ScannerConnectionCreateCommand.ScannerRecord firstScanner,
-        ScannerConnectionCreateCommand.ScannerRecord secondScanner,
+        ScannerRecord firstScanner,
+        ScannerRecord secondScanner,
         ScannerConnectionType type,
-        Integer capacity
+        Integer capacity,
+        Integer currentAssignedCount
 ) {
-    record ScannerRecord(
+    public record ScannerRecord(
             String uniqueId,
             @Enumerated(EnumType.STRING)
             ScannerReadEntityType scannerReadEntityType

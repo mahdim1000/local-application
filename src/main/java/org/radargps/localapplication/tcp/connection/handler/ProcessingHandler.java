@@ -20,10 +20,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.radargps.localapplication.scanner.device.ScannerInternalService;
 import org.radargps.localapplication.tcp.connection.handler.hadler.BaseDataHandler;
-import org.radargps.localapplication.tcp.connection.handler.hadler.BufferingHandler;
 import org.radargps.localapplication.tcp.connection.handler.hadler.DatabaseHandler;
 import org.radargps.localapplication.tcp.connection.handler.hadler.PostProcessHandler;
 import org.radargps.localapplication.captured.data.domain.Data;
+import org.radargps.localapplication.tcp.connection.handler.hadler.PublishDataHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -51,7 +51,7 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
 
         positionHandlers = Stream.of(
                         DatabaseHandler.class,
-                        BufferingHandler.class
+                        PublishDataHandler.class
                 )
                 .map((clazz) -> (BaseDataHandler) context.getBean(clazz))
                 .filter(Objects::nonNull)
@@ -90,6 +90,6 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
 
     private void finishedProcessing(ChannelHandlerContext ctx, Data data, boolean filtered) {
 //        scannerInternalService.updateLatestDeviceData(data.getUniqueId(), data);
-        scannerInternalService.processAndPublish(data);
+//        scannerInternalService.processAndPublish(data);
     }
 }
