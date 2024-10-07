@@ -235,7 +235,14 @@ public class ScannerInternalService {
             return;
         }
         var event = new ProductUnAssigned(scanner.getUniqueId(), data.getData());
-        productUnAssignEventPublisher.publish(event);
+//        productUnAssignEventPublisher.publish(event);
+//        var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+//        if (connection.isPresent()
+//                && connection.get().getCurrentAssignedCount() > 0) {
+//                connection.get().setCurrentAssignedCount(connection.get().getCurrentAssignedCount() - 1);
+//                scannerConnectionInternalService.update(connection.get());
+//
+//        }
     }
 
     private void palletUnAssigned(Scanner scanner, Data data) {
@@ -244,6 +251,11 @@ public class ScannerInternalService {
         }
         var event = new PalletUnAssigned(scanner.getUniqueId(), data.getData());
         palletUnAssignEventPublisher.publish(event);
+//        var connection = scannerConnectionInternalService.findByScannerId(scanner.getUniqueId());
+//        if (connection.isPresent()) {
+//            connection.get().setCurrentAssignedCount(0);
+//            scannerConnectionInternalService.update(connection.get());
+//        }
     }
 
     private void productProductAssigned(Scanner scanner, Data data) {
