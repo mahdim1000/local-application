@@ -56,4 +56,12 @@ public class ScannerConnectionService {
         scannerConnectionInternalService.update(entity);
         return scannerConnectionMapper.toRequest(entity);
     }
+
+    @Transactional
+    public void deleteConnection(UUID scannerConnectionId) {
+        var connection = scannerConnectionInternalService.findById(scannerConnectionId)
+                .orElseThrow(ResourceNotFoundException::new);
+        scannerConnectionInternalService.delete(connection);
+    }
+
 }

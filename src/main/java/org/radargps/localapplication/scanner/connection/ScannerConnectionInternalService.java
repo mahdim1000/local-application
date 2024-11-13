@@ -108,4 +108,9 @@ public class ScannerConnectionInternalService {
     public void update(ScannerConnection entity) {
         scannerConnectionRepository.save(entity);
     }
+
+    public void delete(ScannerConnection connection) {
+        scannerConnectionRepository.delete(connection);
+    }
+
 }
