@@ -18,7 +18,7 @@ public class EntryAlreadyExistsException extends CustomErrorResponseException {
 
     public EntryAlreadyExistsException(String details) {
         super(HttpStatus.BAD_REQUEST, ErrorCode.ENTRY_ALREADY_EXISTS,
-                ExceptionMessage.EXCEL_PARSING_FAILED.getKey(),
+                ExceptionMessage.FIELD_ALREADY_EXISTS.getKey(),
                 details);
     }
 

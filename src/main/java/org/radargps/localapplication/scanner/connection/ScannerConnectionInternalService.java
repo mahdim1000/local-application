@@ -48,8 +48,13 @@ public class ScannerConnectionInternalService {
         secondScanner.setRole(scannerRole);
         scannerInternalService.updateDevice(secondScanner);
 
+        var capacity = createConnection.getCapacity() == null ? 0 : createConnection.getCapacity();
         createConnection.setId(UUID.randomUUID());
-        return scannerConnectionRepository.save(createConnection);
+        createConnection.setFirstScanner(firstScanner);
+        createConnection.setSecondScanner(secondScanner);
+        createConnection.setCapacity(capacity);
+        scannerConnectionRepository.save(createConnection);
+        return createConnection;
     }
     private ScannerRole connectionTypeToRole(ScannerConnectionType type) {
         if (type.equals(ScannerConnectionType.PRODUCT_PALLET_ASSIGN)) {

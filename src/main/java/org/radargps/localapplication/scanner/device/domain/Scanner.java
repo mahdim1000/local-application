@@ -3,6 +3,7 @@ package org.radargps.localapplication.scanner.device.domain;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Table(name = "scanner")
@@ -25,6 +26,9 @@ public class Scanner {
     private UUID lastDataId;
     private String lastDataValue;
     private Long lastDataTime;
+    @Column(updatable = false)
+    private Long createdAt;
+    private Long updatedAt;
 
     public Scanner() {
     }
@@ -109,5 +113,21 @@ public class Scanner {
 
     public void setLastDataTime(Long lastDataTime) {
         this.lastDataTime = lastDataTime;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

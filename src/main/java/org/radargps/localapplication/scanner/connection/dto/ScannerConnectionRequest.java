@@ -13,12 +13,13 @@ public record ScannerConnectionRequest(
         ScannerRecord firstScanner,
         ScannerRecord secondScanner,
         ScannerConnectionType type,
+        UUID companyId,
         Integer capacity,
         Integer currentAssignedCount
 ) {
     public record ScannerRecord(
             String uniqueId,
             @Enumerated(EnumType.STRING)
-            ScannerReadEntityType scannerReadEntityType
+            ScannerReadEntityType readEntityType
     ) {}
 }

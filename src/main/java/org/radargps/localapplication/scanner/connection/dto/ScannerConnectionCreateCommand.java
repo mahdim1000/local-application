@@ -20,15 +20,19 @@ public record ScannerConnectionCreateCommand(
         @NotNull
         @Enumerated(EnumType.STRING)
         ScannerConnectionType type,
+
+        @NotNull
+        UUID companyId,
         Integer capacity
 
 ) {
-        public record ScannerRecord(
-                @NotNull
-                String uniqueId,
+    public record ScannerRecord(
+            @NotNull
+            String uniqueId,
 
-                @NotNull
-                @Enumerated(EnumType.STRING)
-                ScannerReadEntityType readEntityType
-        ) {}
+            @NotNull
+            @Enumerated(EnumType.STRING)
+            ScannerReadEntityType readEntityType
+    ) {
+    }
 }

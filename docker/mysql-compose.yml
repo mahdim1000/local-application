@@ -1,0 +1,24 @@
+version: '3.6'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: local_app_db
+    environment:
+      MYSQL_DATABASE: local_application
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3706:3306"
+    volumes:
+      - local_app_mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  local_app_mysql:
+
+networks:
+  app-network:
+    driver: bridge

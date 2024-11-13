@@ -2,6 +2,8 @@ package org.radargps.localapplication.scanner.device;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import org.radargps.localapplication.captured.data.DataService;
+import org.radargps.localapplication.common.errors.exception.EntryAlreadyExistsException;
+import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.util.TimeUtil;
 import org.radargps.localapplication.pending.data.ProductPendingPalletInternalService;
 import org.radargps.localapplication.pending.data.domain.ProductPendingPallet;
@@ -18,10 +20,12 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +47,8 @@ public class ScannerInternalService {
     private final ProductUnAssignEventPublisher productUnAssignEventPublisher;
     private final DataService dataService;
     private final Cache<UUID, Data> deviceLastDataCache;
+    private final ScannerMapper scannerMapper;
+
 
     public ScannerInternalService(ScannerRepository scannerRepository,
                                   @Lazy ScannerConnectionInternalService scannerConnectionInternalService,
@@ -52,7 +58,7 @@ public class ScannerInternalService {
                                   ProductPalletEventPublisher productPalletEventPublisher,
                                   ProductProductEventPublisher productProductEventPublisher, PalletUnAssignEventPublisher palletUnAssignEventPublisher, ProductUnAssignEventPublisher productUnAssignEventPublisher,
                                   DataService dataService,
-                                  Cache deviceLastDataCache) {
+                                  Cache deviceLastDataCache, ScannerMapper scannerMapper) {
         this.scannerRepository = scannerRepository;
         this.scannerConnectionInternalService = scannerConnectionInternalService;
         this.productPendingPalletInternalService = productPendingPalletInternalService;
@@ -64,6 +70,7 @@ public class ScannerInternalService {
         this.productUnAssignEventPublisher = productUnAssignEventPublisher;
         this.dataService = dataService;
         this.deviceLastDataCache = deviceLastDataCache;
+        this.scannerMapper = scannerMapper;
     }
 
     @Transactional
@@ -81,7 +88,14 @@ public class ScannerInternalService {
                 default -> scanner.setRole(ScannerRole.PRODUCT_SCANNER);
             }
         }
+        var existingScanner = findByUniqueId(scanner.getUniqueId());
+        if (existingScanner.isPresent()) {
+            throw new EntryAlreadyExistsException("Scanner already exists");
+        }
 
+        var now = Instant.now().getEpochSecond();
+        scanner.setCreatedAt(now);
+        scanner.setUpdatedAt(null);
         return scannerRepository.save(scanner);
     }
 
@@ -89,6 +103,8 @@ public class ScannerInternalService {
     @CacheEvict(value = "scanner", key = "#scanner.uniqueId")
     @Transactional
     public Scanner updateDevice(Scanner scanner) {
+        var now = Instant.now().getEpochSecond();
+        scanner.setUpdatedAt(now);
         return scannerRepository.save(scanner);
     }
 
@@ -123,6 +139,15 @@ public class ScannerInternalService {
     public Page<Scanner> findByCompanyId(UUID companyId, Pageable pageable) {
         var result = scannerRepository.findByCompanyId(companyId, pageable);
         return new Page<>(result.getContent().stream().toList(),
+                result.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Scanner> findAll(UUID companyId, ScannerType type, PageRequest pageRequest) {
+        var result = scannerRepository.findAll(
+                ScannerRepository.Specifications.withCompanyIdAndType(companyId, type),
+                pageRequest
+        );        return new Page<>(result.getContent().stream().toList(),
                 result.getTotalElements());
     }
 

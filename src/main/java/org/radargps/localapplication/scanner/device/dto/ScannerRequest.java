@@ -22,6 +22,8 @@ public record ScannerRequest(
         ScannerRole role,
         UUID lastDataId,
         String lastDataValue,
-        Long lastDataTime
+        Long lastDataTime,
+        Long createdAt,
+        Long updatedAt
 ) {
 }

@@ -13,6 +13,7 @@ public record ScannerConnectionUpdateCommand(
         ScannerConnectionCreateCommand.ScannerRecord firstScanner,
         ScannerConnectionCreateCommand.ScannerRecord secondScanner,
         ScannerConnectionType type,
+        UUID companyId,
         Integer capacity
 
 ) {

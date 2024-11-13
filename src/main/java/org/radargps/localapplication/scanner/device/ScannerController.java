@@ -1,8 +1,13 @@
 package org.radargps.localapplication.scanner.device;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import org.radargps.localapplication.common.constants.PageConstants;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
+import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
 import org.radargps.localapplication.scanner.device.dto.ScannerRequest;
 import org.radargps.localapplication.scanner.device.dto.ScannerUpdateCommand;
@@ -11,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+
+import static org.radargps.localapplication.common.constants.PageConstants.*;
 
 @RestController
 @RequestMapping("/api/v1/scanner")
@@ -48,8 +55,34 @@ public class ScannerController {
         );
     }
 
-    @GetMapping("/company/{companyId}")
-    public ResponseEntity<Page<ScannerRequest>> findAllByCompany(@PathVariable UUID companyId) {
-        return ResponseEntity.ok(scannerService.findByCompany(companyId));
+    /**
+     * Retrieve paginated scanner requests with filtering and sorting capabilities
+     *
+     * @param companyId Required company identifier
+     * @param type Optional {@link ScannerType} filter
+     * @param sortBy Optional field to sort by (default: createdAt)
+     * @param sortDirection Optional sort direction (ASC/DESC, default: DESC)
+     * @param page Optional page number (default: 0)
+     * @param size Optional page size (default: 20, max: 100)
+     * @return Page of scanner requests
+     */
+    @GetMapping
+    public ResponseEntity<Page<ScannerRequest>> getScannerRequests(
+            @RequestParam(required = true) @NotNull UUID companyId,
+            @RequestParam(required = false) ScannerType type,
+            @RequestParam(required = false, defaultValue = DEFAULT_SORT_BY) String sortBy,
+            @RequestParam(required = false, defaultValue = DEFAULT_SORT_DIRECTION) String sortDirection,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
+            @RequestParam(required = false, defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) Integer size) {
+
+        Page<ScannerRequest> results = scannerService.findAll(
+                companyId, type,
+                sortBy, sortDirection,
+                page, size
+        );
+
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(results.getTotalElements()))
+                .body(results);
     }
 }
