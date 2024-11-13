@@ -6,7 +6,9 @@ import org.radargps.localapplication.common.pageable.Page;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnection;
 import org.radargps.localapplication.scanner.connection.domain.ScannerConnectionType;
 import org.radargps.localapplication.scanner.device.ScannerInternalService;
+import org.radargps.localapplication.scanner.device.domain.Scanner;
 import org.radargps.localapplication.scanner.device.domain.ScannerRole;
+import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
@@ -32,26 +34,43 @@ public class ScannerConnectionInternalService {
     }
 
     public ScannerConnection create(ScannerConnection createConnection) {
-        var firstScanner = scannerInternalService.findByUniqueId(createConnection.getFirstScanner().getUniqueId())
-                .orElseThrow(ResourceNotFoundException::new);
         var scannerRole = connectionTypeToRole(createConnection.getType());
         if (scannerRole == null) {
             throw new InvalidArgumentException("type is not valid");
         }
-        firstScanner.setReadEntityType(createConnection.getFirstScanner().getReadEntityType());
-        firstScanner.setRole(scannerRole);
-        scannerInternalService.updateDevice(firstScanner);
+        Scanner firstExistingScanner;
+        Scanner secondExistingScanner;
 
-        var secondScanner = scannerInternalService.findByUniqueId(createConnection.getSecondScanner().getUniqueId())
-                .orElseThrow(ResourceNotFoundException::new);
-        secondScanner.setReadEntityType(createConnection.getSecondScanner().getReadEntityType());
-        secondScanner.setRole(scannerRole);
-        scannerInternalService.updateDevice(secondScanner);
+        var firstScanner = scannerInternalService.findByUniqueId(createConnection.getFirstScanner().getUniqueId());
+        if (firstScanner.isEmpty()) {
+            var uniqueId = createConnection.getFirstScanner().getUniqueId();
+            var companyId = createConnection.getCompanyId();
+            var readEntityType = createConnection.getFirstScanner().getReadEntityType();
+            var createScanner = new Scanner(uniqueId, companyId, null, ScannerType.QR_SCANNER, readEntityType, scannerRole);
+            firstExistingScanner = scannerInternalService.create(createScanner);
+        } else {
+            firstScanner.get().setReadEntityType(createConnection.getFirstScanner().getReadEntityType());
+            firstScanner.get().setRole(scannerRole);
+            firstExistingScanner = scannerInternalService.updateDevice(firstScanner.get());
+        }
+
+        var secondScanner = scannerInternalService.findByUniqueId(createConnection.getSecondScanner().getUniqueId());
+        if (secondScanner.isEmpty()) {
+            var uniqueId = createConnection.getSecondScanner().getUniqueId();
+            var companyId = createConnection.getCompanyId();
+            var readEntityType = createConnection.getSecondScanner().getReadEntityType();
+            var createScanner = new Scanner(uniqueId, companyId, null, ScannerType.QR_SCANNER, readEntityType, scannerRole);
+            secondExistingScanner = scannerInternalService.create(createScanner);
+        } else {
+            secondScanner.get().setReadEntityType(createConnection.getSecondScanner().getReadEntityType());
+            secondScanner.get().setRole(scannerRole);
+            secondExistingScanner = scannerInternalService.updateDevice(secondScanner.get());
+        }
 
         var capacity = createConnection.getCapacity() == null ? 0 : createConnection.getCapacity();
         createConnection.setId(UUID.randomUUID());
-        createConnection.setFirstScanner(firstScanner);
-        createConnection.setSecondScanner(secondScanner);
+        createConnection.setFirstScanner(firstExistingScanner);
+        createConnection.setSecondScanner(secondExistingScanner);
         createConnection.setCapacity(capacity);
         scannerConnectionRepository.save(createConnection);
         return createConnection;

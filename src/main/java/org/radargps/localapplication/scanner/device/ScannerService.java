@@ -1,8 +1,10 @@
 package org.radargps.localapplication.scanner.device;
 
+import jakarta.validation.constraints.NotNull;
 import org.radargps.localapplication.common.constants.PageConstants;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
 import org.radargps.localapplication.common.pageable.Page;
+import org.radargps.localapplication.scanner.device.domain.Scanner;
 import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.scanner.device.dto.ScannerCreateCommand;
 import org.radargps.localapplication.scanner.device.dto.ScannerRequest;
@@ -106,5 +108,13 @@ public class ScannerService {
                 result.getContent().stream().map(scannerMapper::toRequest).toList(),
                 result.getTotalElements()
         );
+    }
+
+    /**
+     * Delete a single scanner
+     */
+    @Transactional
+    public void deleteScanner(String uniqueId) {
+        scannerInternalService.deleteScanner(uniqueId);
     }
 }

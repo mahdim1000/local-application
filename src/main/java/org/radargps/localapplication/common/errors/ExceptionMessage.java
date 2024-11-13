@@ -23,6 +23,7 @@ public enum ExceptionMessage {
 
     RESOURCE_NOT_FOUND("Resource not found"),
 
+
     INVALID_PAGINATION_PARAMETERS("Pagination parameters is invalid"),
     PAGE_SIZE_INVALID_PAGINATION_PARAMETERS("PageSize parameter is invalid"),
     PAGE_NUMBER_INVALID_PAGINATION_PARAMETERS("PageNumber parameter is invalid"),
@@ -36,7 +37,9 @@ public enum ExceptionMessage {
 
     DATA_CONSTRAINT_VIOLATION("Constraint violation. Please correct your data"),
 
-    INVALID_INPUT_FORMAT_EXCEPTION("Incorrect input format");
+    INVALID_INPUT_FORMAT_EXCEPTION("Incorrect input format"),
+
+    SCANNER_HAS_ACTIVE_CONNECTION("Scanner has active connection");
 
     private final String key;
 

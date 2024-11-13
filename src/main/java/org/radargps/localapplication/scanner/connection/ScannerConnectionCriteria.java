@@ -80,6 +80,8 @@ public class ScannerConnectionCriteria {
         cr.select(scannerConnectionRoot).where(predicate);
 
         var query = em.createQuery(cr);
-        return Optional.ofNullable(query.getSingleResult());
+        var result = query.getResultList();
+
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
     }
 }

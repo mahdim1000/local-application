@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import org.radargps.localapplication.captured.data.DataService;
 import org.radargps.localapplication.common.errors.exception.EntryAlreadyExistsException;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
+import org.radargps.localapplication.common.errors.exception.ScannerConnectionExistsException;
 import org.radargps.localapplication.common.util.TimeUtil;
 import org.radargps.localapplication.pending.data.ProductPendingPalletInternalService;
 import org.radargps.localapplication.pending.data.domain.ProductPendingPallet;
@@ -323,5 +324,19 @@ public class ScannerInternalService {
                 }
             }
         }
+    }
+
+    /**
+     * Delete a single scanner
+     */
+    @Transactional
+    public void deleteScanner(String uniqueId) {
+        Scanner scanner = scannerRepository.findById(uniqueId)
+                .orElseThrow(() -> new ResourceNotFoundException("Scanner not found: " + uniqueId));
+        var connection = scannerConnectionInternalService.findByScannerId(uniqueId);
+        if (connection.isPresent()) {
+            throw new ScannerConnectionExistsException("this scanner has connection to another: " + uniqueId);
+        }
+        scannerRepository.delete(scanner);
     }
 }

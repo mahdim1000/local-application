@@ -1,5 +1,10 @@
 package org.radargps.localapplication.scanner.device;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -84,5 +89,27 @@ public class ScannerController {
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(results.getTotalElements()))
                 .body(results);
+    }
+
+    /**
+     * Delete a scanner request by ID
+     *
+     * @param uniqueId The Mac Address of the scanner to delete
+     * @return ResponseEntity with no content on success
+     */
+    @DeleteMapping("/{uniqueId}")
+    @Operation(summary = "Delete a scanner request",
+            description = "Deletes a scanner request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Scanner successfully deleted"),
+            @ApiResponse(responseCode = "404", description = "Scanner not found",
+                    content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<Void> deleteScanner(
+            @Parameter(description = "Scanner ID to delete", required = true)
+            @PathVariable @NotNull String uniqueId) {
+
+        scannerService.deleteScanner(uniqueId);
+        return ResponseEntity.noContent().build();
     }
 }

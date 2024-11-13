@@ -34,12 +34,13 @@ public class Scanner {
     }
 
     public Scanner(String uniqueId, UUID companyId, String ipAddress,
-                   ScannerType type, ScannerReadEntityType readEntityType) {
+                   ScannerType type, ScannerReadEntityType readEntityType, ScannerRole role) {
         this.uniqueId = uniqueId;
         this.companyId = companyId;
         this.ipAddress = ipAddress;
         this.type = type;
         this.readEntityType = readEntityType;
+        this.role = role;
     }
 
 
