@@ -24,21 +24,18 @@ public class ScannerConnectionService {
         this.scannerConnectionInternalService = scannerConnectionInternalService;
     }
 
-    @Transactional
     public ScannerConnectionRequest createConnection(ScannerConnectionCreateCommand createCommand) {
         var createConnection = scannerConnectionMapper.toEntity(createCommand);
         ScannerConnection scannerConnection = this.scannerConnectionInternalService.create(createConnection);
         return scannerConnectionMapper.toRequest(scannerConnection);
     }
 
-    @Transactional(readOnly = true)
     public Optional<ScannerConnectionRequest> findById(UUID scannerConnectionId) {
         return scannerConnectionInternalService.findById(scannerConnectionId)
                 .map(scannerConnectionMapper::toRequest);
     }
 
 
-    @Transactional(readOnly = true)
     public Page<ScannerConnectionRequest> findAll(UUID companyId, ScannerConnectionType type, Integer pageSize, Integer pageNumber) {
         var result = scannerConnectionInternalService.findAll(companyId, type, pageSize, pageNumber);
         var content = result.getContent().stream()
@@ -48,16 +45,20 @@ public class ScannerConnectionService {
         return new Page<>(content, result.getTotalElements());
     }
 
-    @Transactional
     public ScannerConnectionRequest partialUpdate(UUID scannerConnectionId, ScannerConnectionUpdateCommand updateCommand) {
+        // Find entity once
         var entity = scannerConnectionInternalService.findById(scannerConnectionId)
-                        .orElseThrow(ResourceNotFoundException::new);
-        scannerConnectionMapper.partialUpdate(entity, updateCommand);
-        scannerConnectionInternalService.update(entity);
-        return scannerConnectionMapper.toRequest(entity);
+                .orElseThrow(ResourceNotFoundException::new);
+
+        var entityCopy = scannerConnectionMapper.clone(entity);
+        // Apply partial updates
+        scannerConnectionMapper.partialUpdate(entityCopy, updateCommand);
+
+        // Update and get result
+        var updatedEntity = scannerConnectionInternalService.update(entityCopy);
+        return scannerConnectionMapper.toRequest(updatedEntity);
     }
 
-    @Transactional
     public void deleteConnection(UUID scannerConnectionId) {
         var connection = scannerConnectionInternalService.findById(scannerConnectionId)
                 .orElseThrow(ResourceNotFoundException::new);

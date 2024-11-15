@@ -1,6 +1,5 @@
 package org.radargps.localapplication.scanner.device;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import org.radargps.localapplication.captured.data.DataService;
 import org.radargps.localapplication.common.errors.exception.EntryAlreadyExistsException;
 import org.radargps.localapplication.common.errors.exception.ResourceNotFoundException;
@@ -17,13 +16,11 @@ import org.radargps.localapplication.scanner.device.domain.ScannerRole;
 import org.radargps.localapplication.scanner.device.domain.ScannerType;
 import org.radargps.localapplication.scanner.device.event.*;
 import org.radargps.localapplication.scanner.device.message.publisher.*;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -47,7 +44,6 @@ public class ScannerInternalService {
     private final PalletUnAssignEventPublisher palletUnAssignEventPublisher;
     private final ProductUnAssignEventPublisher productUnAssignEventPublisher;
     private final DataService dataService;
-    private final Cache<UUID, Data> deviceLastDataCache;
     private final ScannerMapper scannerMapper;
 
 
@@ -58,8 +54,7 @@ public class ScannerInternalService {
                                   ProductScannerEventPublisher productScannerEventPublisher,
                                   ProductPalletEventPublisher productPalletEventPublisher,
                                   ProductProductEventPublisher productProductEventPublisher, PalletUnAssignEventPublisher palletUnAssignEventPublisher, ProductUnAssignEventPublisher productUnAssignEventPublisher,
-                                  DataService dataService,
-                                  Cache deviceLastDataCache, ScannerMapper scannerMapper) {
+                                  DataService dataService, ScannerMapper scannerMapper) {
         this.scannerRepository = scannerRepository;
         this.scannerConnectionInternalService = scannerConnectionInternalService;
         this.productPendingPalletInternalService = productPendingPalletInternalService;
@@ -70,7 +65,6 @@ public class ScannerInternalService {
         this.palletUnAssignEventPublisher = palletUnAssignEventPublisher;
         this.productUnAssignEventPublisher = productUnAssignEventPublisher;
         this.dataService = dataService;
-        this.deviceLastDataCache = deviceLastDataCache;
         this.scannerMapper = scannerMapper;
     }
 
@@ -91,7 +85,7 @@ public class ScannerInternalService {
         }
         var existingScanner = findByUniqueId(scanner.getUniqueId());
         if (existingScanner.isPresent()) {
-            throw new EntryAlreadyExistsException("Scanner already exists");
+            throw new EntryAlreadyExistsException("Scanner already exists: " + scanner.getUniqueId());
         }
 
         var now = Instant.now().getEpochSecond();
@@ -101,28 +95,20 @@ public class ScannerInternalService {
     }
 
 
-    @CacheEvict(value = "scanner", key = "#scanner.uniqueId")
-    @Transactional
     public Scanner updateDevice(Scanner scanner) {
         var now = Instant.now().getEpochSecond();
         scanner.setUpdatedAt(now);
         return scannerRepository.save(scanner);
     }
 
-    @Cacheable(value = "scanner", key = "#uniqueId")
-    @Transactional
     public Optional<Scanner> findOne(String uniqueId) {
         return scannerRepository.findById(uniqueId);
     }
 
-    @CachePut(value = "scanner", key = "#uniqueId")
-    @Transactional
     public void updateLatestDeviceData(String uniqueId, Data data) {
         scannerRepository.setLastDataIdAndLastDataTimeByUniqueId(uniqueId, data.getId(), data.getData(), data.getServerTime());
     }
 
-    //    @Cacheable(value = "scanner-data", key = "#uniqueId")
-    @Transactional
     public Optional<Data> findLatestScannerData(String uniqueId) {
         var scanner = findByUniqueId(uniqueId);
         if (scanner.isPresent() && scanner.get().getLastDataId() != null) {
@@ -131,19 +117,16 @@ public class ScannerInternalService {
         return Optional.empty();
     }
 
-    @Cacheable(value = "scanner", key = "#uniqueId")
     public Optional<Scanner> findByUniqueId(String uniqueId) {
         return scannerRepository.findByUniqueId(uniqueId);
     }
 
-    @Transactional(readOnly = true)
     public Page<Scanner> findByCompanyId(UUID companyId, Pageable pageable) {
         var result = scannerRepository.findByCompanyId(companyId, pageable);
         return new Page<>(result.getContent().stream().toList(),
                 result.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
     public Page<Scanner> findAll(UUID companyId, ScannerType type, PageRequest pageRequest) {
         var result = scannerRepository.findAll(
                 ScannerRepository.Specifications.withCompanyIdAndType(companyId, type),
@@ -152,7 +135,6 @@ public class ScannerInternalService {
                 result.getTotalElements());
     }
 
-    @Transactional
     public void processAndPublish(Data data) {
         var scanner = findOne(data.getUniqueId());
         if (scanner.isPresent()) {

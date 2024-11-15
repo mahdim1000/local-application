@@ -8,13 +8,13 @@ import java.util.UUID;
 
 @Table(name = "scanner_connection")
 @Entity
-public class ScannerConnection {
+public class ScannerConnection implements Cloneable {
 
     @Id
     private UUID id;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Scanner firstScanner;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Scanner secondScanner;
 
     @Column(columnDefinition = "VARCHAR(50)")

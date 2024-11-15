@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,15 +23,17 @@ import java.util.UUID;
 public class ScannerConnectionInternalService {
     private final ScannerConnectionRepository scannerConnectionRepository;
     private final ScannerConnectionCriteria scannerConnectionCriteria;
+    private final ScannerConnectionMapper scannerConnectionMapper;
 
     @Autowired
     private final ScannerInternalService scannerInternalService;
 
     public ScannerConnectionInternalService(ScannerConnectionRepository scannerConnectionRepository,
-                                            ScannerConnectionCriteria scannerConnectionCriteria,
+                                            ScannerConnectionCriteria scannerConnectionCriteria, ScannerConnectionMapper scannerConnectionMapper,
                                             @Lazy ScannerInternalService scannerInternalService) {
         this.scannerConnectionRepository = scannerConnectionRepository;
         this.scannerConnectionCriteria = scannerConnectionCriteria;
+        this.scannerConnectionMapper = scannerConnectionMapper;
         this.scannerInternalService = scannerInternalService;
     }
 
@@ -86,6 +90,7 @@ public class ScannerConnectionInternalService {
         }
     }
 
+    @Transactional
     public Optional<ScannerConnection> findById(UUID scannerConnectionId) {
         return scannerConnectionRepository.findById(scannerConnectionId);
     }
@@ -105,8 +110,70 @@ public class ScannerConnectionInternalService {
         return new Page<>(dbPage.getContent(), dbPage.getTotalElements());
     }
 
-    public void update(ScannerConnection entity) {
-        scannerConnectionRepository.save(entity);
+    @Transactional
+    public ScannerConnection update(ScannerConnection updateConnection) {
+        var existingConnection = findById(updateConnection.getId())
+                .orElseThrow(ResourceNotFoundException::new);
+
+        if (isScannerChanged(existingConnection.getFirstScanner(), updateConnection.getFirstScanner())) {
+            var firstScanner = scannerInternalService.findByUniqueId(updateConnection.getFirstScanner().getUniqueId());
+            var scannerRole = connectionTypeToRole(updateConnection.getType());
+
+            if (firstScanner.isEmpty()) {
+                var uniqueId = updateConnection.getFirstScanner().getUniqueId();
+                var companyId = updateConnection.getCompanyId();
+                var readEntityType = updateConnection.getFirstScanner().getReadEntityType();
+
+                var createScanner = new Scanner(uniqueId, companyId, null, ScannerType.QR_SCANNER, readEntityType, scannerRole);
+                createScanner = scannerInternalService.create(createScanner);
+                updateConnection.setFirstScanner(createScanner);
+            } else {
+                firstScanner.get().setReadEntityType(updateConnection.getFirstScanner().getReadEntityType());
+                firstScanner.get().setRole(scannerRole);
+                var updateScanner = scannerInternalService.updateDevice(firstScanner.get());
+                updateConnection.setFirstScanner(updateScanner);
+            }
+        }
+
+        if (isScannerChanged(existingConnection.getSecondScanner(), updateConnection.getSecondScanner())) {
+            var secondScanner = scannerInternalService.findByUniqueId(updateConnection.getSecondScanner().getUniqueId());
+            var scannerRole = connectionTypeToRole(updateConnection.getType());
+
+            if (secondScanner.isEmpty()) {
+                var uniqueId = updateConnection.getSecondScanner().getUniqueId();
+                var companyId = updateConnection.getCompanyId();
+                var readEntityType = updateConnection.getSecondScanner().getReadEntityType();
+
+                var createScanner = new Scanner(uniqueId, companyId, null, ScannerType.QR_SCANNER, readEntityType, scannerRole);
+                createScanner = scannerInternalService.create(createScanner);
+                updateConnection.setSecondScanner(createScanner);
+            } else {
+                secondScanner.get().setReadEntityType(updateConnection.getSecondScanner().getReadEntityType());
+                secondScanner.get().setRole(scannerRole);
+                var updateScanner = scannerInternalService.updateDevice(secondScanner.get());
+                updateConnection.setSecondScanner(updateScanner);
+            }
+        }
+
+        return scannerConnectionRepository.save(updateConnection);
+    }
+
+    ScannerConnection merge(ScannerConnection savedEntity, ScannerConnection updatedEntity) {
+        ScannerConnection mergedEntity = new ScannerConnection();
+        mergedEntity.setId(savedEntity.getId());
+        savedEntity.setCapacity(updatedEntity.getCapacity() != null ? updatedEntity.getCapacity() : savedEntity.getCapacity());
+        savedEntity.setType(updatedEntity.getType() != null ? updatedEntity.getType() : savedEntity.getType());
+        savedEntity.setCompanyId(updatedEntity.getCompanyId() != null ? updatedEntity.getCompanyId() : savedEntity.getCompanyId());
+
+        Scanner firstScanner = updatedEntity.getFirstScanner() != null && updatedEntity.getFirstScanner().getUniqueId() != null ? updatedEntity.getFirstScanner() : savedEntity.getFirstScanner();
+        savedEntity.setFirstScanner(updatedEntity.getFirstScanner() != null ? updatedEntity.getFirstScanner() : savedEntity.getFirstScanner());
+        savedEntity.setSecondScanner(updatedEntity.getSecondScanner() != null ? updatedEntity.getSecondScanner() : savedEntity.getSecondScanner());
+        return savedEntity;
+    }
+
+    boolean isScannerChanged(Scanner s1, Scanner s2) {
+        return !s1.getUniqueId().equals(s2.getUniqueId())
+                || !s1.getReadEntityType().equals(s2.getReadEntityType());
     }
 
     public void delete(ScannerConnection connection) {

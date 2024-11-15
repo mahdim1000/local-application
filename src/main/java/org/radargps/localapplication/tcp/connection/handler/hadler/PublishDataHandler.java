@@ -1,7 +1,5 @@
 package org.radargps.localapplication.tcp.connection.handler.hadler;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import org.radargps.localapplication.captured.data.DataService;
 import org.radargps.localapplication.captured.data.domain.Data;
 import org.radargps.localapplication.scanner.device.ScannerInternalService;
 import org.slf4j.Logger;

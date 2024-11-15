@@ -44,15 +44,8 @@ public class ScannerController {
         return ResponseEntity.ok(scannerService.partialUpdate(uniqueId, command));
     }
 
-    @GetMapping("{deviceId}")
-    public ResponseEntity<ScannerRequest> findById(@PathVariable String uniqueId) {
-        return ResponseEntity.ok(
-                scannerService.findOne(uniqueId)
-                        .orElseThrow(ResourceNotFoundException::new)
-        );
-    }
 
-    @GetMapping("/unique-id/{uniqueId}")
+    @GetMapping("/{uniqueId}")
     public ResponseEntity<ScannerRequest> findByUniqueId(@PathVariable String uniqueId) {
         return ResponseEntity.ok(
                 scannerService.findByUniqueId(uniqueId)
