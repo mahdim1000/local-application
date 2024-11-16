@@ -33,7 +33,8 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CustomErrorResponseException.class)
     public ResponseEntity<Object> handleCustomErrorResponse(CustomErrorResponseException ex, WebRequest request) {
-        return createErrorResponse(ex.getBody(), ex.getHttpStatus(), request);
+        var body = createErrorResponse(ex.getBody().code(), ex.getMessage(), ex.details);
+        return createErrorResponse(body, ex.getHttpStatus(), request);
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
@@ -147,14 +148,15 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    private ResponseEntity<Object> createErrorResponse(Object body, HttpStatusCode status, WebRequest request) {
+    private ResponseEntity<Object> createErrorResponse(ErrorResponse body, HttpStatusCode status, WebRequest request) {
         String path = request.getDescription(false).replace("uri=", "");
         String guid = java.util.UUID.randomUUID().toString();
+
 
         ApiErrorResponse apiErrorResponse = ApiErrorResponse.builder()
                 .path(path)
                 .guid(guid)
-                .error((ErrorResponse) body)
+                .error(body)
                 .status(((HttpStatus) status).name())
                 .statusCode(status.value())
                 .timestamp(Instant.now().getEpochSecond())

@@ -33,7 +33,8 @@ public abstract class CustomErrorResponseException extends RuntimeException {
         return this.body;
     }
 
-    public record Body(ErrorCode code, String message, String details) {}
+    public record Body(ErrorCode code, String message, String details) {
+    }
 }
 
 
